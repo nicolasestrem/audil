@@ -29,6 +29,7 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
         const val SAMPLE_RATE = 16000
         const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
+        const val IO_BUFFER_SIZE = 65536  // 64KB buffer for efficient I/O
     }
 
     @SuppressLint("MissingPermission")
@@ -76,12 +77,15 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
 
     private fun writeAudioDataToFile(outputFile: File, bufferSize: Int) {
         val data = ByteArray(bufferSize)
-        val fileOutputStream = FileOutputStream(outputFile)
-        
-        // Write placeholder for WAV header
-        fileOutputStream.write(ByteArray(44))
+        val fileOutputStream = java.io.BufferedOutputStream(
+            FileOutputStream(outputFile),
+            IO_BUFFER_SIZE
+        )
 
         try {
+            // Write placeholder for WAV header
+            fileOutputStream.write(ByteArray(44))
+
             while (isRecording) {
                 val read = recorder?.read(data, 0, bufferSize) ?: 0
                 if (read > 0) {
@@ -92,12 +96,13 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
             e.printStackTrace()
         } finally {
             try {
+                fileOutputStream.flush()  // Ensure all data written
                 fileOutputStream.close()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-        
+
         // Update WAV header with correct file size
         updateWavHeader(outputFile)
     }

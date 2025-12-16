@@ -55,7 +55,7 @@ class SummaryRepository @Inject constructor(
         // 4. Generate
         // In a real flow, we'd emit token by token.
         // For the wrapper we built, it takes a callback
-        val result = llamaCpp.generateSummary(fullPrompt) { token ->
+        val result = llamaCpp.generateSummary(fullPrompt) { _ ->
             // In a suspend function we can't easily emit from callback without callbackFlow
             // For now, we'll just gather the result in the wrapper/repository method
             // heavily simplified for this prototype structure
@@ -63,10 +63,11 @@ class SummaryRepository @Inject constructor(
         
         // Emitting the full result chunk-by-chunk simulation
         val words = result.split(" ")
-        var buffer = ""
+        val buffer = StringBuilder()
+
         words.forEach { word ->
-            buffer += "$word "
-            emit(buffer)
+            buffer.append(word).append(" ")
+            emit(buffer.toString())  // Create string only when emitting
             kotlinx.coroutines.delay(20)
         }
     }

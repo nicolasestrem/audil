@@ -15,7 +15,12 @@ class HistoryRepository @Inject constructor(
     suspend fun getMeetingById(id: Long): MeetingEntity? = meetingDao.getMeetingById(id)
 
     suspend fun saveMeeting(meeting: MeetingEntity): Long {
-        return meetingDao.insertMeeting(meeting)
+        return if (meeting.id == 0L) {
+            meetingDao.insertMeeting(meeting)
+        } else {
+            meetingDao.updateMeeting(meeting)
+            meeting.id
+        }
     }
 
     suspend fun updateSummary(id: Long, summaryPath: String, summaryPreview: String) {

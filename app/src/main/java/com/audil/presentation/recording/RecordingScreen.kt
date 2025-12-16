@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlin.random.Random
+import androidx.compose.animation.core.*
+import kotlin.math.*
 
 @Composable
 fun RecordingScreen(
@@ -102,30 +104,66 @@ fun RecordingScreen(
 @Composable
 fun Waveform(isRecording: Boolean) {
     val color = MaterialTheme.colorScheme.primary
+
+    // Memoize wave data points (only recalculate when recording state changes)
+    val wavePoints = androidx.compose.runtime.remember(isRecording) {
+        if (isRecording) {
+            // Precompute normalized X values
+            (0..100).map { i ->
+                val normalizedX = (i.toFloat() / 100) * 4 * Math.PI.toFloat()
+                Pair(i, normalizedX)
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "waveform")
+    val phase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * Math.PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing)
+        ),
+        label = "phase"
+    )
+
     Canvas(modifier = Modifier.fillMaxSize()) {
-        if (!isRecording) return@Canvas
-        
+        if (!isRecording) {
+            drawLine(
+                color = color.copy(alpha = 0.5f),
+                start = androidx.compose.ui.geometry.Offset(0f, size.height / 2),
+                end = androidx.compose.ui.geometry.Offset(size.width, size.height / 2),
+                strokeWidth = 4f
+            )
+            return@Canvas
+        }
+
         val width = size.width
         val height = size.height
         val path = Path()
-        
-        val points = 50
-        val step = width / points
-        
+        val step = width / 100
+
         path.moveTo(0f, height / 2)
-        
-        for (i in 0..points) {
+
+        // Use precomputed points
+        for ((i, normalizedX) in wavePoints) {
             val x = i * step
-            // Simple random data for visualization
-            val amplitude = Random.nextFloat() * (height / 2)
-            val y = (height / 2) + if (i % 2 == 0) amplitude else -amplitude
+            val wave1 = kotlin.math.sin((normalizedX + phase).toDouble()).toFloat()
+            val wave2 = kotlin.math.sin((normalizedX * 1.5 + phase * 2).toDouble()).toFloat() * 0.5f
+            val amplitude = (height / 3) * (wave1 + wave2) * 0.5f
+            val y = (height / 2) + amplitude
             path.lineTo(x, y)
         }
-        
+
         drawPath(
             path = path,
             color = color,
-            style = Stroke(width = 4f)
+            style = Stroke(
+                width = 6f,
+                cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                join = androidx.compose.ui.graphics.StrokeJoin.Round
+            )
         )
     }
 }

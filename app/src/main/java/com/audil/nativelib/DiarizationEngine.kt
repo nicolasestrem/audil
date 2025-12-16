@@ -21,23 +21,42 @@ import javax.inject.Singleton
 class DiarizationEngine @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    @Volatile
+    private var isInitialized = false
+
+    @Volatile
+    private var currentModelPath: String? = null
+
+    private val modelLock = Any()
+
     data class DiarizationSegment(
         val start: Float,
         val end: Float,
         val speaker: Int
     )
 
+    @Suppress("UNUSED_PARAMETER")
     suspend fun initDiarization(modelDir: String) = withContext(Dispatchers.IO) {
-        Log.w(TAG, "Sherpa-ONNX not available - speaker diarization disabled")
+        synchronized(modelLock) {
+            Log.w(TAG, "Sherpa-ONNX not available - speaker diarization disabled")
+            isInitialized = false
+            currentModelPath = null
+        }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     suspend fun diarize(audioFile: File): List<DiarizationSegment> = withContext(Dispatchers.IO) {
-        Log.w(TAG, "Sherpa-ONNX not available - returning empty diarization")
-        return@withContext emptyList()
+        synchronized(modelLock) {
+            Log.w(TAG, "Sherpa-ONNX not available - returning empty diarization")
+            return@withContext emptyList()
+        }
     }
 
     fun release() {
-        // No-op
+        synchronized(modelLock) {
+            isInitialized = false
+            currentModelPath = null
+        }
     }
 
     companion object {
