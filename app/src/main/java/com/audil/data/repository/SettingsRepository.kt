@@ -32,6 +32,12 @@ class SettingsRepository @Inject constructor(
         
         const val MODEL_LOCAL_STANDARD = "local_standard"
         const val MODEL_LOCAL_OPTIMIZED = "local_optimized"
+        
+        // OpenAI Compatible API
+        val KEY_USE_REMOTE_GENERATION = androidx.datastore.preferences.core.booleanPreferencesKey("use_remote_generation")
+        val KEY_REMOTE_API_URL = stringPreferencesKey("remote_api_url")
+        val KEY_REMOTE_API_KEY = stringPreferencesKey("remote_api_key")
+        val KEY_REMOTE_MODEL_NAME = stringPreferencesKey("remote_model_name")
     }
 
     val theme: Flow<String> = dataStore.data.map { prefs ->
@@ -44,6 +50,22 @@ class SettingsRepository @Inject constructor(
 
     val modelType: Flow<String> = dataStore.data.map { prefs ->
         prefs[KEY_MODEL_TYPE] ?: MODEL_LOCAL_STANDARD
+    }
+    
+    val useRemoteGeneration: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_USE_REMOTE_GENERATION] ?: false
+    }
+    
+    val remoteApiUrl: Flow<String> = dataStore.data.map { prefs ->
+        prefs[KEY_REMOTE_API_URL] ?: "https://api.openai.com/v1"
+    }
+    
+    val remoteApiKey: Flow<String> = dataStore.data.map { prefs ->
+        prefs[KEY_REMOTE_API_KEY] ?: ""
+    }
+    
+    val remoteModelName: Flow<String> = dataStore.data.map { prefs ->
+        prefs[KEY_REMOTE_MODEL_NAME] ?: "gpt-3.5-turbo"
     }
 
     suspend fun setTheme(theme: String) {

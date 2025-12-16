@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.audil.data.repository.SettingsRepository
 import com.audil.ui.theme.ElectricBlue
-import com.audil.ui.theme.MidnightBlue
 import com.audil.ui.theme.TextPrimary
 import com.audil.ui.theme.TextSecondary
 import com.audil.ui.components.AudilScaffold
@@ -39,11 +38,11 @@ fun ModelSelectionScreen(
                 title = { Text("Model Selection", color = TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MidnightBlue
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -51,7 +50,7 @@ fun ModelSelectionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MidnightBlue)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(padding)
                 .padding(16.dp)
         ) {

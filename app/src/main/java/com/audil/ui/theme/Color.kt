@@ -2,19 +2,31 @@ package com.audil.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Midnight Palette
-val MidnightBlue = Color(0xFF0F172A)
-val DeepCharcoal = Color(0xFF1E293B)
-val ElectricBlue = Color(0xFF3B82F6)
-val VibrantTeal = Color(0xFF14B8A6)
-val SoftSurface = Color(0xFF334155)
-val TextPrimary = Color(0xFFF1F5F9)
-val TextSecondary = Color(0xFF94A3B8)
+// Premium Clean Palette (Soft Gradients & Glassmorphism)
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Primary Accents (Softer)
+val ElectricBlue = Color(0xFF4F46E5) // Indigo-like Blue
+val VibrantTeal = Color(0xFF0EA5E9)   // Sky Blue
+val SoftPurple = Color(0xFFA855F7)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Premium Light Theme
+val LightSurface = Color(0xFFFFFFFF)
+val LightOnSurface = Color(0xFF1E293B)
+val LightOnSurfaceVariant = Color(0xFF475569) // Slate 600
+
+// Premium Dark Theme
+val DarkSurface = Color(0xFF1E293B)         // Slate 800
+val DarkOnSurface = Color(0xFFF1F5F9)
+val DarkOnSurfaceVariant = Color(0xFF94A3B8) // Slate 400
+
+// Legacy Colors Removed
+val TextPrimary = Color(0xFF0F172A)
+val TextSecondary = Color(0xFF64748B) // Slate 500
+
+// Standard / Clean Actions
+val PaperWhite = Color(0xFFFFFFFF)
+val UnixBlack = Color(0xFF121212) // Material Dark Background
+val UnixSurface = Color(0xFF1E1E1E)
+val UnixOnBackground = Color(0xFFE0E0E0)
+val UnixOnSurface = Color(0xFFE0E0E0)
+val UnixOnSurfaceVariant = Color(0xFFBDBDBD)

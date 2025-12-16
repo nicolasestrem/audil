@@ -83,6 +83,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
+    // Compression
+    implementation("org.apache.commons:commons-compress:1.26.1")
+
     // Security
     implementation("androidx.security:security-crypto:1.0.0")
     implementation(libs.androidx.datastore.preferences)

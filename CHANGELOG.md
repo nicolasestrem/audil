@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2025-12-16
+
+### Added
+- **UI Design System**: Complete "Modern Minimalist" redesign with high-contrast Dark Mode and clean Light Mode.
+- **Model Downloads**: Real network download support for Sherpa-ONNX models (tar.bz2 automatic extraction).
+- **Meeting Types**: Added "Personal Note" meeting type with specialized prompt.
+- **Exports**: File export and sharing functionality for Meeting Summaries.
+- **Languages**: Language selection dialog in Settings.
+
+### Changed
+- **Navigation**: Improved Settings navigation with explicit Back button.
+- **Components**: Restyled buttons (Pill shape) and cards (Flat/Minimal) to match new design.
+- **Architecture**: `ModelManager` now handles `tar.bz2` extraction using `commons-compress`.
+
+### Fixed
+- **Model Selection**: Fixed empty file generation by replacing simulated downloads with real GitHub Release downloads.
+- **Theme**: Fixed theme application delay (changes now apply immediately).
+- **Crash**: Fixed crash when exporting summaries (Context misuse).
+
 ## [Unreleased]
 
 ### Added

@@ -1,6 +1,5 @@
 package com.audil.presentation.recording
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,13 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlin.random.Random
 
 @Composable
 fun RecordingScreen(
@@ -57,14 +53,8 @@ fun RecordingScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Waveform Visualization
-        com.audil.ui.components.AudilCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-        ) {
-            Waveform(isRecording = isRecording)
-        }
+        // Waveform visualization removed as per user request
+        Spacer(modifier = Modifier.height(200.dp))
 
         Spacer(modifier = Modifier.height(48.dp))
 
@@ -99,36 +89,7 @@ fun RecordingScreen(
     }
 }
 
-@Composable
-fun Waveform(isRecording: Boolean) {
-    val color = MaterialTheme.colorScheme.primary
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        if (!isRecording) return@Canvas
-        
-        val width = size.width
-        val height = size.height
-        val path = Path()
-        
-        val points = 50
-        val step = width / points
-        
-        path.moveTo(0f, height / 2)
-        
-        for (i in 0..points) {
-            val x = i * step
-            // Simple random data for visualization
-            val amplitude = Random.nextFloat() * (height / 2)
-            val y = (height / 2) + if (i % 2 == 0) amplitude else -amplitude
-            path.lineTo(x, y)
-        }
-        
-        drawPath(
-            path = path,
-            color = color,
-            style = Stroke(width = 4f)
-        )
-    }
-}
+
 
 @Composable
 fun RecordButton(
