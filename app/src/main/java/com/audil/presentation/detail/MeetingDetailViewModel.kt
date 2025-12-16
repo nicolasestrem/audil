@@ -1,5 +1,6 @@
 package com.audil.presentation.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.audil.data.local.entity.MeetingEntity
@@ -46,6 +47,10 @@ class MeetingDetailViewModel @Inject constructor(
     private var mediaPlayer: android.media.MediaPlayer? = null
     private var progressJob: kotlinx.coroutines.Job? = null
 
+    companion object {
+        private const val TAG = "MeetingDetailViewModel"
+    }
+
     fun loadMeeting(id: Long) {
         viewModelScope.launch {
             _meeting.value = repository.getMeetingById(id)
@@ -87,9 +92,10 @@ class MeetingDetailViewModel @Inject constructor(
                         _playbackProgress.value = 1f
                         stopProgressTracker()
                     }
-                    setOnErrorListener { _, _, _ ->
+                    setOnErrorListener { _, what, extra ->
                         _isPreparingAudio.value = false
-                        _message.value = "Playback error"
+                        _message.value = "Playback error (code: $what, extra: $extra)"
+                        Log.e(TAG, "MediaPlayer error: what=$what, extra=$extra")
                         true
                     }
                     prepareAsync()  // NON-BLOCKING
@@ -215,15 +221,15 @@ class MeetingDetailViewModel @Inject constructor(
             content.append("Title: ${m.title}\n")
             content.append("Date: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date(m.timestamp))}\n\n")
             
-            if (m.summaryPath != null) {
-                val sumFile = java.io.File(m.summaryPath!!)
+            m.summaryPath?.let { summaryPath ->
+                val sumFile = java.io.File(summaryPath)
                 if (sumFile.exists()) {
                     content.append("SUMMARY:\n${sumFile.readText()}\n\n")
                 }
             }
-            
-            if (m.transcriptPath != null) {
-                val transFile = java.io.File(m.transcriptPath!!)
+
+            m.transcriptPath?.let { transcriptPath ->
+                val transFile = java.io.File(transcriptPath)
                 if (transFile.exists()) {
                     content.append("TRANSCRIPT:\n${transFile.readText()}\n")
                 }
@@ -256,6 +262,8 @@ class MeetingDetailViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        progressJob?.cancel()
+        progressJob = null
         mediaPlayer?.release()
         mediaPlayer = null
     }

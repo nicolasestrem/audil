@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.audil.data.local.dao.MeetingDao
 import com.audil.data.local.entity.MeetingEntity
 
-@Database(entities = [MeetingEntity::class], version = 2, exportSchema = false)
+@Database(entities = [MeetingEntity::class], version = 2, exportSchema = true)
 @androidx.room.TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun meetingDao(): MeetingDao

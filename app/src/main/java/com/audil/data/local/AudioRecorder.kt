@@ -29,6 +29,7 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
         const val SAMPLE_RATE = 16000
         const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
+        const val IO_BUFFER_SIZE = 65536  // 64KB buffer for efficient I/O
     }
 
     @SuppressLint("MissingPermission")
@@ -78,7 +79,7 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
         val data = ByteArray(bufferSize)
         val fileOutputStream = java.io.BufferedOutputStream(
             FileOutputStream(outputFile),
-            65536  // 64KB buffer
+            IO_BUFFER_SIZE
         )
 
         try {
