@@ -76,12 +76,15 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
 
     private fun writeAudioDataToFile(outputFile: File, bufferSize: Int) {
         val data = ByteArray(bufferSize)
-        val fileOutputStream = FileOutputStream(outputFile)
-        
-        // Write placeholder for WAV header
-        fileOutputStream.write(ByteArray(44))
+        val fileOutputStream = java.io.BufferedOutputStream(
+            FileOutputStream(outputFile),
+            65536  // 64KB buffer
+        )
 
         try {
+            // Write placeholder for WAV header
+            fileOutputStream.write(ByteArray(44))
+
             while (isRecording) {
                 val read = recorder?.read(data, 0, bufferSize) ?: 0
                 if (read > 0) {
@@ -92,12 +95,13 @@ class AndroidAudioRecorder @Inject constructor() : AudioRecorder {
             e.printStackTrace()
         } finally {
             try {
+                fileOutputStream.flush()  // Ensure all data written
                 fileOutputStream.close()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-        
+
         // Update WAV header with correct file size
         updateWavHeader(outputFile)
     }

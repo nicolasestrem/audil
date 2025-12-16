@@ -17,7 +17,7 @@ interface MeetingDao {
     @Query("SELECT * FROM meetings WHERE id = :id")
     suspend fun getMeetingById(id: Long): MeetingEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMeeting(meeting: MeetingEntity): Long
 
     @Update

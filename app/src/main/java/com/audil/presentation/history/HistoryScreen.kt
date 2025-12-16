@@ -65,8 +65,14 @@ fun HistoryScreen(
                 contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(meetings) { meeting ->
-                    MeetingItem(meeting = meeting, onClick = { onMeetingClick(meeting) })
+                items(
+                    items = meetings,
+                    key = { meeting -> meeting.id }  // Stable key for compose optimization
+                ) { meeting ->
+                    MeetingItem(
+                        meeting = meeting,
+                        onClick = { onMeetingClick(meeting) }
+                    )
                 }
             }
         }

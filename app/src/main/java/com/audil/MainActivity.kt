@@ -78,8 +78,8 @@ fun MainScreen() {
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
                         )
                     )
                     NavigationBarItem(
@@ -96,8 +96,8 @@ fun MainScreen() {
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
                         )
                     )
                     NavigationBarItem(
@@ -114,8 +114,8 @@ fun MainScreen() {
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
                         )
                     )
                     NavigationBarItem(
@@ -132,8 +132,8 @@ fun MainScreen() {
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
                         )
                     )
                 }
@@ -148,7 +148,8 @@ fun MainScreen() {
             composable("home") {
                 HomeScreen(
                     onRecordClick = { navController.navigate("recording") },
-                    onHistoryClick = { navController.navigate("history") }
+                    onHistoryClick = { navController.navigate("history") },
+                    onSettingsClick = { navController.navigate("settings") }
                 )
             }
             composable("recording") {

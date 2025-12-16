@@ -33,6 +33,8 @@ fun ModelSelectionScreen(
 ) {
     val currentModel by viewModel.modelType.collectAsState()
 
+    val isDownloading by viewModel.isDownloading.collectAsState()
+
     AudilScaffold(
         topBar = {
             SmallTopAppBar(
@@ -48,45 +50,62 @@ fun ModelSelectionScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MidnightBlue)
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            Text(
-                "AI Model",
-                style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                "Choose the model that best fits your needs",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            // Standard Model
-            ModelSelectionCard(
-                title = "Standard model (multilingual)",
-                description = "Faster performance and smaller file size\nSupports all languages",
-                size = "142 MB",
-                isSelected = currentModel == SettingsRepository.MODEL_LOCAL_STANDARD,
-                onClick = { viewModel.setModelType(SettingsRepository.MODEL_LOCAL_STANDARD) }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Optimized Model
-            ModelSelectionCard(
-                title = "Optimized Model (Multilingual)",
-                description = "Highest accuracy available\nLarger file size, slower performance\nSupports all languages except Hindi/Gujarati",
-                size = "465 MB",
-                isSelected = currentModel == SettingsRepository.MODEL_LOCAL_OPTIMIZED,
-                onClick = { viewModel.setModelType(SettingsRepository.MODEL_LOCAL_OPTIMIZED) }
-            )
+        Box(modifier = Modifier.padding(padding)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MidnightBlue)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    "AI Model",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Choose the model that best fits your needs",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+    
+                // Standard Model
+                ModelSelectionCard(
+                    title = "Standard model (multilingual)",
+                    description = "Faster performance and smaller file size\nSupports all languages",
+                    size = "142 MB",
+                    isSelected = currentModel == SettingsRepository.MODEL_LOCAL_STANDARD,
+                    onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_STANDARD) }
+                )
+    
+                Spacer(modifier = Modifier.height(16.dp))
+    
+                // Optimized Model
+                ModelSelectionCard(
+                    title = "Optimized Model (Multilingual)",
+                    description = "Highest accuracy available\nLarger file size, slower performance\nSupports all languages except Hindi/Gujarati",
+                    size = "465 MB",
+                    isSelected = currentModel == SettingsRepository.MODEL_LOCAL_OPTIMIZED,
+                    onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_OPTIMIZED) }
+                )
+            }
+            
+            if (isDownloading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MidnightBlue.copy(alpha = 0.8f))
+                        .clickable(enabled = false) {}, // Block clicks
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = ElectricBlue)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Downloading Model...", color = TextPrimary)
+                    }
+                }
+            }
         }
     }
 }
