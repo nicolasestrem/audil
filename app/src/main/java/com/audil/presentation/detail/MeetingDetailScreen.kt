@@ -82,7 +82,7 @@ fun MeetingDetailScreen(
                     androidx.compose.material3.DropdownMenu(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
-                        modifier = Modifier.background(com.audil.ui.theme.DeepCharcoal)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                     ) {
                          androidx.compose.material3.DropdownMenuItem(
                             text = { Text("Export Audio to Folder", color = com.audil.ui.theme.TextPrimary) },
@@ -101,11 +101,11 @@ fun MeetingDetailScreen(
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = com.audil.ui.theme.MidnightBlue
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = com.audil.ui.theme.MidnightBlue
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -156,7 +156,7 @@ fun MeetingDetailScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(com.audil.ui.theme.DeepCharcoal, MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

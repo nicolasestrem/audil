@@ -36,7 +36,12 @@ fun SummaryScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
-    val context by viewModel.selectedContext.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current // Renamed from selectedContext variable to avoid conflict? No, ViewModel uses `context` via `selectedContext` name?
+    // ViewModel exposed `context` variable name usage: `val context by viewModel.selectedContext`
+    // Wait, line 39 is: `val context by viewModel.selectedContext.collectAsState()`
+    // I need to be careful with variable shadowing.
+    
+    val meetingContext by viewModel.selectedContext.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     AudilScaffold(
@@ -49,7 +54,7 @@ fun SummaryScreen(
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MidnightBlue
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -57,7 +62,7 @@ fun SummaryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MidnightBlue)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(padding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
@@ -65,7 +70,7 @@ fun SummaryScreen(
             
             // Configuration Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = DeepCharcoal),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -79,7 +84,7 @@ fun SummaryScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MidnightBlue, RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                             .clickable { expanded = true }
                             .padding(12.dp)
                     ) {
@@ -88,14 +93,14 @@ fun SummaryScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(context.type.displayName, color = TextPrimary)
+                            Text(meetingContext.type.displayName, color = TextPrimary)
                             Icon(Icons.Default.ChevronRight, contentDescription = "Select", tint = TextSecondary)
                         }
                         
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(DeepCharcoal)
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                         ) {
                             MeetingType.values().forEach { type ->
                                 DropdownMenuItem(
@@ -112,9 +117,9 @@ fun SummaryScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Participant Count
-                    Text("Participants: ${context.participantCount}", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                    Text("Participants: ${meetingContext.participantCount}", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                     Slider(
-                        value = context.participantCount.toFloat(),
+                        value = meetingContext.participantCount.toFloat(),
                         onValueChange = { viewModel.setParticipantCount(it.toInt()) },
                         valueRange = 1f..20f,
                         steps = 19,
@@ -168,7 +173,7 @@ fun SummaryScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = DeepCharcoal),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -192,7 +197,14 @@ fun SummaryScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("Save", color = ElectricBlue)
                             }
-                            TextButton(onClick = { viewModel.exportSummary((uiState as SummaryUiState.Success).summary) }) {
+                            TextButton(onClick = { 
+                                val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(android.content.Intent.EXTRA_TEXT, (uiState as SummaryUiState.Success).summary)
+                                }
+                                val shareIntent = android.content.Intent.createChooser(sendIntent, "Share Summary")
+                                androidx.core.content.ContextCompat.startActivity(context, shareIntent, null)
+                            }) {
                                 Icon(Icons.Default.Share, contentDescription = null, tint = ElectricBlue)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text("Share", color = ElectricBlue)

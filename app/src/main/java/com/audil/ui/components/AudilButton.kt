@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -27,7 +28,7 @@ fun AudilButton(
             .fillMaxWidth()
             .height(56.dp),
         enabled = enabled,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(50), // Pill shape
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
@@ -35,13 +36,14 @@ fun AudilButton(
             disabledContentColor = contentColor.copy(alpha = 0.5f)
         ),
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 6.dp,
-            pressedElevation = 2.dp
+            defaultElevation = 0.dp, // Flat/Modern
+            pressedElevation = 0.dp
         )
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
         )
     }
 }

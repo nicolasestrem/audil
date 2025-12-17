@@ -19,27 +19,33 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = ElectricBlue,
     secondary = VibrantTeal,
-    tertiary = Pink80,
-    background = MidnightBlue,
-    surface = DeepCharcoal,
+    tertiary = SoftPurple,
+    background = UnixBlack,
+    surface = UnixSurface,
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onBackground = TextPrimary,
-    onSurface = TextPrimary
+    onBackground = UnixOnBackground,
+    onSurface = UnixOnSurface,
+    onSurfaceVariant = UnixOnSurfaceVariant
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = ElectricBlue,
     secondary = VibrantTeal,
-    tertiary = Pink40
-    // Keep light scheme simple, but preference is Dark
+    tertiary = SoftPurple,
+    background = PaperWhite,
+    surface = LightSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onBackground = LightOnSurface,
+    onSurface = LightOnSurface,
+    onSurfaceVariant = LightOnSurfaceVariant
 )
 
 @Composable
 fun AudilTheme(
-    darkTheme: Boolean = true, // Default to Dark for premium look
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Disable dynamic color to enforce branding
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = false, // Disable for consistent branding
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -50,11 +56,12 @@ fun AudilTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
+            window.statusBarColor = Color.Transparent.toArgb() // Allow gradient to show through? Or translucent?
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
