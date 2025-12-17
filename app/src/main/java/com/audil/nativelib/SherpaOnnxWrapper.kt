@@ -21,20 +21,39 @@ import javax.inject.Singleton
 class SherpaOnnxWrapper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    @Volatile
+    private var isInitialized = false
+
+    @Volatile
+    private var currentModelPath: String? = null
+
+    private val modelLock = Any()
+
+    @Suppress("UNUSED_PARAMETER")
     suspend fun initRecognizer(
         modelDir: String,
         modelName: String
     ) = withContext(Dispatchers.IO) {
-        Log.w(TAG, "Sherpa-ONNX not available - speech recognition disabled")
+        synchronized(modelLock) {
+            Log.w(TAG, "Sherpa-ONNX not available - speech recognition disabled")
+            isInitialized = false
+            currentModelPath = null
+        }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     suspend fun transcribe(audioFile: File): String = withContext(Dispatchers.IO) {
-        Log.w(TAG, "Sherpa-ONNX not available - returning empty transcription")
-        return@withContext ""
+        synchronized(modelLock) {
+            Log.w(TAG, "Sherpa-ONNX not available - returning empty transcription")
+            return@withContext ""
+        }
     }
 
     fun release() {
-        // No-op
+        synchronized(modelLock) {
+            isInitialized = false
+            currentModelPath = null
+        }
     }
 
     companion object {

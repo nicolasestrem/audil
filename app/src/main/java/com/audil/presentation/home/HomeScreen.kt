@@ -37,6 +37,7 @@ import com.audil.ui.theme.VibrantTeal
 fun HomeScreen(
     onRecordClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     onMeetingClick: (Long) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
@@ -72,6 +73,26 @@ fun HomeScreen(
             onClick = onRecordClick,
             modifier = Modifier.height(64.dp)
         )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            androidx.compose.material3.OutlinedButton(
+                onClick = onHistoryClick,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("History")
+            }
+            androidx.compose.material3.OutlinedButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Settings")
+            }
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
         

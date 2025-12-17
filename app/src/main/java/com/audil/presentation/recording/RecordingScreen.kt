@@ -89,8 +89,6 @@ fun RecordingScreen(
     }
 }
 
-
-
 @Composable
 fun RecordButton(
     isRecording: Boolean,

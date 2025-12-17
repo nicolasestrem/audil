@@ -14,20 +14,46 @@ import javax.inject.Singleton
 class LlamaCppWrapper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    @Volatile
     private var isModelLoaded = false
+
+    @Volatile
     private var currentModelPath: String? = null
 
+    private val modelLock = Any()
+
     suspend fun loadModel(modelPath: String): Boolean = withContext(Dispatchers.IO) {
-        if (!File(modelPath).exists()) {
-            Log.e(TAG, "Model file not found: $modelPath")
-            return@withContext false
+        // Check if already loaded (outside synchronized for early return)
+        if (isModelLoaded && currentModelPath == modelPath) {
+            return@withContext true
         }
-        
-        // Simulating native model loading
+
+        synchronized(modelLock) {
+            // Double-check after acquiring lock
+            if (isModelLoaded && currentModelPath == modelPath) {
+                return@withContext true
+            }
+
+            if (!File(modelPath).exists()) {
+                Log.e(TAG, "Model file not found: $modelPath")
+                return@withContext false
+            }
+
+            // Unload previous model if different
+            if (isModelLoaded && currentModelPath != modelPath) {
+                unload()
+            }
+        }
+
+        // Perform time-consuming operations outside synchronized block
         Log.d(TAG, "Loading model from $modelPath...")
-        delay(1000) // Simulate generic load time
-        isModelLoaded = true
-        currentModelPath = modelPath
+        delay(1000) // Simulate load time
+
+        synchronized(modelLock) {
+            isModelLoaded = true
+            currentModelPath = modelPath
+        }
+
         return@withContext true
     }
 
@@ -41,21 +67,8 @@ class LlamaCppWrapper @Inject constructor(
         
         // Simulating specific LLM output based on prompts
         // In a real implementation this would call a JNI function
-        val simulatedResponse = if (prompt.contains("Action Items")) {
-             """
-             ## Meeting Summary
-             The team discussed the upcoming Q4 goals and aligned on the marketing strategy.
-             
-             ## Action Items
-             - [ ] Implement new login flow (Owner: Alice)
-             - [ ] Update documentation (Owner: Bob)
-             - [ ] Schedule team offsite (Owner: Charlie)
-             """.trimIndent()
-        } else {
-            """
-            Here is a summary of the transcript provided. Key points include discussion on project timelines, budget allocation for the next quarter, and staffing needs.
-            """.trimIndent()
-        }
+        // Generate a dynamic summary based on the prompt content
+        val simulatedResponse = generateDynamicResponse(prompt)
 
         val tokens = simulatedResponse.split(" ")
         val sb = StringBuilder()
@@ -68,6 +81,35 @@ class LlamaCppWrapper @Inject constructor(
         }
         
         return@withContext sb.toString().trim()
+    }
+    
+    private fun generateDynamicResponse(prompt: String): String {
+        return if (prompt.contains("Action Items")) {
+            """
+            ## Meeting Summary
+            The discussion focused on: ${prompt.take(50).replace("\n", " ")}...
+            
+            ## Key Outcomes
+            - Aligned on project milestones
+            - Reviewed budget constraints
+            
+            ## Action Items
+            - [ ] Follow up on discussed points
+            - [ ] Schedule next review
+            """.trimIndent()
+        } else {
+            val topic = prompt.split(" ").take(5).joinToString(" ")
+            """
+            ## Executive Summary
+            This meeting covered several key topics regarding $topic...
+            
+            ## Details
+            The participants discussed the current status and future steps. 
+            Key decisions were made regarding the timeline and resource allocation.
+            
+            The tone was collaborative and focused on problem-solving.
+            """.trimIndent()
+        }
     }
     
     fun unload() {

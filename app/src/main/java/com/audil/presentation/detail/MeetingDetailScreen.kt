@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -150,7 +151,8 @@ fun MeetingDetailScreen(
                 val progress by viewModel.playbackProgress.collectAsState()
                 val isTranscribing by viewModel.isTranscribing.collectAsState()
                 val transcriptionStatus by viewModel.transcriptionStatus.collectAsState()
-                
+                val isPreparingAudio by viewModel.isPreparingAudio.collectAsState()
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -158,16 +160,26 @@ fun MeetingDetailScreen(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { viewModel.togglePlayPause() }) {
-                        Icon(
-                            imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = com.audil.ui.theme.ElectricBlue
-                        )
+                    IconButton(
+                        onClick = { viewModel.togglePlayPause() },
+                        enabled = !isPreparingAudio
+                    ) {
+                        if (isPreparingAudio) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.padding(12.dp),
+                                color = com.audil.ui.theme.ElectricBlue
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = if (isPlaying) "Pause" else "Play",
+                                tint = com.audil.ui.theme.ElectricBlue
+                            )
+                        }
                     }
-                    
+
                     Spacer(modifier = Modifier.padding(8.dp))
-                    
+
                     if (isPlaying) {
                         // Simple progress bar
                         androidx.compose.material3.LinearProgressIndicator(
@@ -178,7 +190,7 @@ fun MeetingDetailScreen(
                         )
                     } else {
                         Text(
-                            text = if (progress > 0) "Paused" else "Ready to play",
+                            text = if (isPreparingAudio) "Preparing..." else if (progress > 0) "Paused" else "Ready to play",
                             style = MaterialTheme.typography.bodyMedium,
                             color = com.audil.ui.theme.TextSecondary
                         )
@@ -215,6 +227,45 @@ fun MeetingDetailScreen(
                         )
                     ) {
                         Text(if (m.summaryPath != null) "View Summary" else "Generate Summary", color = androidx.compose.ui.graphics.Color.White)
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        "Transcript",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = com.audil.ui.theme.TextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Load transcript asynchronously via ViewModel
+                    val transcriptContent by viewModel.transcriptContent.collectAsState()
+
+                    LaunchedEffect(m.transcriptPath) {
+                        if (m.transcriptPath != null) {
+                            viewModel.loadTranscript()
+                        }
+                    }
+
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(com.audil.ui.theme.DeepCharcoal, MaterialTheme.shapes.medium)
+                            .padding(16.dp)
+                    ) {
+                        if (transcriptContent != null) {
+                            Text(
+                                text = transcriptContent!!,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = com.audil.ui.theme.TextSecondary
+                            )
+                        } else {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.align(androidx.compose.ui.Alignment.Center),
+                                color = com.audil.ui.theme.ElectricBlue
+                            )
+                        }
                     }
                 }
             } ?: run {

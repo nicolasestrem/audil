@@ -1,10 +1,18 @@
 package com.audil.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.audil.domain.model.MeetingType
 
-@Entity(tableName = "meetings")
+@Entity(
+    tableName = "meetings",
+    indices = [
+        Index(value = ["timestamp"], orders = [Index.Order.DESC]),
+        Index(value = ["type"]),
+        Index(value = ["participantCount"])
+    ]
+)
 data class MeetingEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

@@ -96,7 +96,7 @@ class RecordingViewModel @Inject constructor(
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (true) {
-                delay(100)
+                delay(500)  // Update every 500ms (2x per second) - sufficient for seconds display
                 _recordingDuration.value = System.currentTimeMillis() - startTime
             }
         }

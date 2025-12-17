@@ -181,6 +181,7 @@ fun MainScreen() {
                 HomeScreen(
                     onRecordClick = { navController.navigate("recording") },
                     onHistoryClick = { navController.navigate("history") },
+                    onSettingsClick = { navController.navigate("settings") },
                     onMeetingClick = { meetingId -> navController.navigate("detail/$meetingId") }
                 )
             }
