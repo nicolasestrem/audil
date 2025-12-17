@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.audil.data.repository.SettingsRepository
 import com.audil.ui.theme.ElectricBlue
-import com.audil.ui.theme.MidnightBlue
 import com.audil.ui.theme.TextPrimary
 import com.audil.ui.theme.TextSecondary
 import com.audil.ui.components.AudilScaffold
@@ -41,11 +40,11 @@ fun ModelSelectionScreen(
                 title = { Text("Model Selection", color = TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MidnightBlue
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -54,7 +53,7 @@ fun ModelSelectionScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MidnightBlue)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(16.dp)
             ) {
                 Text(
@@ -69,7 +68,7 @@ fun ModelSelectionScreen(
                     color = TextSecondary,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
-    
+
                 // Standard Model
                 ModelSelectionCard(
                     title = "Standard model (multilingual)",
@@ -78,9 +77,9 @@ fun ModelSelectionScreen(
                     isSelected = currentModel == SettingsRepository.MODEL_LOCAL_STANDARD,
                     onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_STANDARD) }
                 )
-    
+
                 Spacer(modifier = Modifier.height(16.dp))
-    
+
                 // Optimized Model
                 ModelSelectionCard(
                     title = "Optimized Model (Multilingual)",
@@ -90,12 +89,12 @@ fun ModelSelectionScreen(
                     onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_OPTIMIZED) }
                 )
             }
-            
+
             if (isDownloading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MidnightBlue.copy(alpha = 0.8f))
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
                         .clickable(enabled = false) {}, // Block clicks
                     contentAlignment = Alignment.Center
                 ) {

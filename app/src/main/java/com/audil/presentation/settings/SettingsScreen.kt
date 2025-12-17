@@ -5,11 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,13 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.audil.data.repository.SettingsRepository
-import com.audil.ui.theme.DeepCharcoal
-import com.audil.ui.theme.ElectricBlue
-import com.audil.ui.theme.MidnightBlue
-import com.audil.ui.theme.TextPrimary
-import com.audil.ui.theme.TextSecondary
+import com.audil.ui.components.AudilCard
 import com.audil.ui.components.AudilScaffold
-import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,13 +30,22 @@ fun SettingsScreen(
     val currentTheme by viewModel.theme.collectAsState()
     val currentLang by viewModel.language.collectAsState()
     val currentModel by viewModel.modelType.collectAsState()
+    
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     AudilScaffold(
         topBar = {
-            SmallTopAppBar(
-                title = { Text("Settings", color = TextPrimary) },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MidnightBlue
+            TopAppBar(
+                title = { Text("Settings", fontWeight = FontWeight.SemiBold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         }
@@ -50,40 +53,32 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MidnightBlue)
                 .padding(padding)
                 .padding(16.dp)
         ) {
             
             // Language & Region
             SettingsGroupTitle("Language & Region")
-            SettingsCard {
-                Column(
-                    modifier = Modifier.fillMaxWidth().clickable { /* TODO: Language Selection */ }
+            AudilCard(
+                modifier = Modifier.fillMaxWidth().clickable { showLanguageDialog = true }
+            ) {
+                Row(
+                   verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Transcription Language", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                    Text("Language used for voice transcription", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Black.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(ElectricBlue, RoundedCornerShape(16.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(currentLang.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(if (currentLang == "en") "English" else currentLang, color = TextPrimary, modifier = Modifier.weight(1f))
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextSecondary)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Transcription Language", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text("Language used for voice transcription", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Text(
+                        if (currentLang == "en") "English" else currentLang.uppercase(),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -91,53 +86,100 @@ fun SettingsScreen(
 
             // Appearance
             SettingsGroupTitle("Appearance")
-            Text("Theme", style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.padding(bottom = 4.dp))
-            Text("Choose how the app looks and feels", style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.padding(bottom = 12.dp))
-            
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ThemeOptionCard(
-                    title = "Light",
-                    selected = currentTheme == SettingsRepository.THEME_LIGHT,
-                    color = Color.White,
-                    onClick = { viewModel.setTheme(SettingsRepository.THEME_LIGHT) },
-                    modifier = Modifier.weight(1f)
-                )
-                ThemeOptionCard(
-                    title = "Dark",
-                    selected = currentTheme == SettingsRepository.THEME_DARK,
-                    color = DeepCharcoal,
-                    onClick = { viewModel.setTheme(SettingsRepository.THEME_DARK) },
-                    modifier = Modifier.weight(1f)
-                )
-                ThemeOptionCard(
-                    title = "System",
-                    selected = currentTheme == SettingsRepository.THEME_SYSTEM,
-                    color = Color.Gray, // Simplified representation
-                    onClick = { viewModel.setTheme(SettingsRepository.THEME_SYSTEM) },
-                    modifier = Modifier.weight(1f)
-                )
+            AudilCard {
+                Column {
+                    Text("Theme", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Choose how the app looks and feels", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        ThemeOptionCard(
+                            title = "Light",
+                            selected = currentTheme == SettingsRepository.THEME_LIGHT,
+                            color = Color(0xFFFAFAFA),
+                            onClick = { viewModel.setTheme(SettingsRepository.THEME_LIGHT) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        ThemeOptionCard(
+                            title = "Dark",
+                            selected = currentTheme == SettingsRepository.THEME_DARK,
+                            color = Color(0xFF1E1E1E),
+                            onClick = { viewModel.setTheme(SettingsRepository.THEME_DARK) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        ThemeOptionCard(
+                            title = "System",
+                            selected = currentTheme == SettingsRepository.THEME_SYSTEM,
+                            color = Color.Gray,
+                            onClick = { viewModel.setTheme(SettingsRepository.THEME_SYSTEM) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Model Selection
             SettingsGroupTitle("Model Selection")
-            SettingsCard(onClick = onNavigateToModelSelection) {
+            AudilCard(modifier = Modifier.clickable(onClick = onNavigateToModelSelection)) {
                 val modelName = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD) 
-                    "Standard model (multilingual)" else "Optimized model (multilingual)"
+                    "Standard (Tiny)" else "Base / Small"
                 val modelDesc = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
-                    "Faster performance and smaller file size" else "Highest accuracy available"
+                    "Faster performance (Multilingual)" else "Higher accuracy"
                 val modelSize = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
-                    "142 MB" else "465 MB"
+                    "~40 MB" else "~75-200 MB"
 
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(modelName, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-                    Text(modelDesc, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(modelSize, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(modelName, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(modelDesc, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(modelSize, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
+    }
+    
+    if (showLanguageDialog) {
+        val languages = listOf("en" to "English", "fr" to "French", "es" to "Spanish", "de" to "German", "it" to "Italian", "pt" to "Portuguese")
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text("Select Language") },
+            text = {
+                Column {
+                    languages.forEach { (code, name) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setLanguage(code)
+                                    showLanguageDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = currentLang == code,
+                                onClick = { 
+                                    viewModel.setLanguage(code)
+                                    showLanguageDialog = false
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(name)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -145,30 +187,12 @@ fun SettingsScreen(
 fun SettingsGroupTitle(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = TextPrimary,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(bottom = 12.dp)
+        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
     )
 }
-
-@Composable
-fun SettingsCard(onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, TextSecondary.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
-    ) {
-        Box(modifier = Modifier.padding(16.dp)) {
-            content()
-        }
-    }
-}
-
-
 
 @Composable
 fun ThemeOptionCard(
@@ -186,21 +210,33 @@ fun ThemeOptionCard(
             modifier = Modifier
                 .height(60.dp)
                 .fillMaxWidth()
-                .border(
-                    if (selected) 2.dp else 1.dp,
-                    if (selected) Color.White else TextSecondary.copy(alpha = 0.3f),
-                    RoundedCornerShape(12.dp)
-                )
-                .background(Color.Black, RoundedCornerShape(12.dp)), // Background behind the preview
+                .background(color, RoundedCornerShape(12.dp))
+                .padding(2.dp), // Inner padding
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(color, RoundedCornerShape(4.dp))
-            )
+            if (selected) {
+               Box(
+                   modifier = Modifier
+                       .fillMaxSize()
+                       .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                       .padding(2.dp)
+               ) {
+                   // Ring effect
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = Color.Transparent,
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                    ) {}
+               }
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(title, style = MaterialTheme.typography.bodyMedium, color = if (selected) Color.White else TextSecondary)
+        Text(
+            title, 
+            style = MaterialTheme.typography.bodyMedium, 
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }

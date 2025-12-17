@@ -38,6 +38,7 @@ fun HomeScreen(
     onRecordClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onMeetingClick: (Long) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val meetings by viewModel.meetings.collectAsState()
@@ -121,7 +122,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(recentMeetings) { meeting ->
-                MeetingItem(meeting = meeting, onClick = { /* Navigate to detail? We need a callback here */ })
+                MeetingItem(meeting = meeting, onClick = { onMeetingClick(meeting.id) })
                 // Note: HomeScreen callback structure in MainActivity might need update to handle meeting click 
                 // or we pass a no-op / separate callback. 
                 // For now, strictly UI polish, let's keep it simple or redirect to history.
