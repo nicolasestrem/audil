@@ -9,4 +9,3 @@ plugins {
 task("clean", Delete::class) {
     delete(layout.buildDirectory.get().asFile)
 }
-
