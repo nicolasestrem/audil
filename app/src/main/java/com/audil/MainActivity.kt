@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
 fun AudilApp() {
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val themePreference by settingsViewModel.theme.collectAsState()
-    
+
     val useDarkTheme = when (themePreference) {
         SettingsRepository.THEME_LIGHT -> false
         SettingsRepository.THEME_DARK -> true
@@ -71,18 +71,18 @@ fun AudilApp() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    
+
     AudilScaffold(
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
-            
+
             // Only show bottom bar on main screens
-                if (currentRoute in listOf("home", "recording", "history", "settings")) {
+            if (currentRoute in listOf("home", "recording", "history", "settings")) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface,
-                    tonalElevation = 8.dp // Restore elevation for distinction
+                    tonalElevation = 8.dp
                 ) {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
@@ -186,7 +186,14 @@ fun MainScreen() {
                 )
             }
             composable("recording") {
-                RecordingScreen()
+                RecordingScreen(
+                    onMeetingSaved = { meetingId ->
+                        navController.navigate("detail/$meetingId") {
+                            popUpTo("home") { saveState = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
             composable("history") {
                 HistoryScreen(
@@ -220,9 +227,9 @@ fun MainScreen() {
             }
             composable("settings") {
                 SettingsScreen(
-                    onBack = { 
+                    onBack = {
                         navController.navigate("home") {
-                             popUpTo(navController.graph.findStartDestination().id) {
+                            popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
                             launchSingleTop = true

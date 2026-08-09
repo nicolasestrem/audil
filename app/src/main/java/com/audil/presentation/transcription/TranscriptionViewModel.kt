@@ -19,31 +19,23 @@ class TranscriptionViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<TranscriptionUiState>(TranscriptionUiState.Idle)
     val uiState: StateFlow<TranscriptionUiState> = _uiState.asStateFlow()
 
-    private val _selectedModel = MutableStateFlow("tiny")
+    private val _selectedModel = MutableStateFlow("whisper-1")
     val selectedModel: StateFlow<String> = _selectedModel.asStateFlow()
-
-    private val _isDiarizationEnabled = MutableStateFlow(false)
-    val isDiarizationEnabled: StateFlow<Boolean> = _isDiarizationEnabled.asStateFlow()
 
     fun setModel(model: String) {
         _selectedModel.value = model
-    }
-    
-    fun toggleDiarization(enabled: Boolean) {
-        _isDiarizationEnabled.value = enabled
     }
 
     fun transcribeRecording(file: File) {
         viewModelScope.launch {
             _uiState.value = TranscriptionUiState.Loading("Starting...")
-            
+
             val result = repository.transcribe(
-                audioFile = file, 
-                modelType = _selectedModel.value,
-                enableDiarization = _isDiarizationEnabled.value
+                audioFile = file,
+                modelType = _selectedModel.value
             ) { status ->
                 if (_uiState.value is TranscriptionUiState.Loading) {
-                     _uiState.value = TranscriptionUiState.Loading(status)
+                    _uiState.value = TranscriptionUiState.Loading(status)
                 }
             }
 

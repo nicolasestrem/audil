@@ -3,16 +3,24 @@ package com.audil.presentation.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,8 +38,18 @@ fun SettingsScreen(
     val currentTheme by viewModel.theme.collectAsState()
     val currentLang by viewModel.language.collectAsState()
     val currentModel by viewModel.modelType.collectAsState()
-    
+
+    // API settings
+    val useRemote by viewModel.useRemoteGeneration.collectAsState()
+    val apiUrl by viewModel.remoteApiUrl.collectAsState()
+    val apiKey by viewModel.remoteApiKey.collectAsState()
+    val chatModelName by viewModel.remoteModelName.collectAsState()
+    val transModelName by viewModel.transcriptionModel.collectAsState()
+    val isTestingConnection by viewModel.isTestingConnection.collectAsState()
+    val connectionError by viewModel.connectionErrorMessage.collectAsState()
+
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showApiDialog by remember { mutableStateOf(false) }
 
     AudilScaffold(
         topBar = {
@@ -54,24 +72,21 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            
+
             // Language & Region
             SettingsGroupTitle("Language & Region")
             AudilCard(
                 modifier = Modifier.fillMaxWidth().clickable { showLanguageDialog = true }
             ) {
-                Row(
-                   verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Transcription Language", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                         Text("Language used for voice transcription", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    
                     Spacer(modifier = Modifier.width(16.dp))
-                    
                     Text(
                         if (currentLang == "en") "English" else currentLang.uppercase(),
                         color = MaterialTheme.colorScheme.primary,
@@ -91,7 +106,6 @@ fun SettingsScreen(
                     Text("Theme", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     Text("Choose how the app looks and feels", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(16.dp))
-                    
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         ThemeOptionCard(
                             title = "Light",
@@ -123,7 +137,7 @@ fun SettingsScreen(
             // Model Selection
             SettingsGroupTitle("Model Selection")
             AudilCard(modifier = Modifier.clickable(onClick = onNavigateToModelSelection)) {
-                val modelName = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD) 
+                val modelName = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
                     "Standard (Tiny)" else "Base / Small"
                 val modelDesc = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
                     "Faster performance (Multilingual)" else "Higher accuracy"
@@ -140,11 +154,42 @@ fun SettingsScreen(
                     Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // OpenAI Compatible API Configuration
+            SettingsGroupTitle("Remote API (OpenAI-Compatible)")
+            AudilCard(modifier = Modifier.clickable { showApiDialog = true }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            if (useRemote) "Remote generation enabled" else "Remote generation disabled",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            if (useRemote) "Using cloud API for summaries" else "Using on-device models",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = useRemote,
+                        onCheckedChange = { viewModel.setUseRemoteGeneration(it) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
-    
+
+    // Language Dialog
     if (showLanguageDialog) {
-        val languages = listOf("en" to "English", "fr" to "French", "es" to "Spanish", "de" to "German", "it" to "Italian", "pt" to "Portuguese")
+        val languages = listOf(
+            "en" to "English", "fr" to "French", "es" to "Spanish",
+            "de" to "German", "it" to "Italian", "pt" to "Portuguese"
+        )
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
             title = { Text("Select Language") },
@@ -163,7 +208,7 @@ fun SettingsScreen(
                         ) {
                             RadioButton(
                                 selected = currentLang == code,
-                                onClick = { 
+                                onClick = {
                                     viewModel.setLanguage(code)
                                     showLanguageDialog = false
                                 }
@@ -181,6 +226,142 @@ fun SettingsScreen(
             }
         )
     }
+
+    // API Configuration Dialog
+    if (showApiDialog) {
+        ApiConfigurationDialog(
+            apiUrl = apiUrl,
+            apiKey = apiKey,
+            chatModel = chatModelName,
+            transModel = transModelName,
+            isTesting = isTestingConnection,
+            errorMessage = connectionError,
+            onUrlChange = { viewModel.setRemoteApiUrl(it) },
+            onKeyChange = { viewModel.setRemoteApiKey(it) },
+            onChatModelChange = { viewModel.setRemoteModelName(it) },
+            onTransModelChange = { viewModel.setTranscriptionModel(it) },
+            onTestConnection = { viewModel.testConnection() },
+            onDismiss = { showApiDialog = false }
+        )
+    }
+}
+
+@Composable
+fun ApiConfigurationDialog(
+    apiUrl: String,
+    apiKey: String,
+    chatModel: String,
+    transModel: String,
+    isTesting: Boolean,
+    errorMessage: String?,
+    onUrlChange: (String) -> Unit,
+    onKeyChange: (String) -> Unit,
+    onChatModelChange: (String) -> Unit,
+    onTransModelChange: (String) -> Unit,
+    onTestConnection: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var keyVisible by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("API Configuration") },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Endpoint URL
+                OutlinedTextField(
+                    value = apiUrl,
+                    onValueChange = onUrlChange,
+                    label = { Text("API Endpoint URL") },
+                    placeholder = { Text("https://api.openai.com/v1") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
+                )
+
+                // API Key
+                OutlinedTextField(
+                    value = apiKey,
+                    onValueChange = onKeyChange,
+                    label = { Text("API Key") },
+                    placeholder = { Text("sk-...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = if (keyVisible) VisualTransformation.None
+                        else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { keyVisible = !keyVisible }) {
+                            Icon(
+                                if (keyVisible) Icons.Default.VisibilityOff
+                                else Icons.Default.Visibility,
+                                contentDescription = if (keyVisible) "Hide key" else "Show key"
+                            )
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                )
+
+                // Chat model
+                OutlinedTextField(
+                    value = chatModel,
+                    onValueChange = onChatModelChange,
+                    label = { Text("Chat / Summary Model") },
+                    placeholder = { Text("gpt-4o") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Transcription model
+                OutlinedTextField(
+                    value = transModel,
+                    onValueChange = onTransModelChange,
+                    label = { Text("Transcription Model") },
+                    placeholder = { Text("whisper-1") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Test Connection Button
+                Button(
+                    onClick = onTestConnection,
+                    enabled = !isTesting,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isTesting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(if (isTesting) "Testing..." else "Test Connection")
+                }
+
+                // Error message
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Done")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -211,30 +392,29 @@ fun ThemeOptionCard(
                 .height(60.dp)
                 .fillMaxWidth()
                 .background(color, RoundedCornerShape(12.dp))
-                .padding(2.dp), // Inner padding
+                .padding(2.dp),
             contentAlignment = Alignment.Center
         ) {
             if (selected) {
-               Box(
-                   modifier = Modifier
-                       .fillMaxSize()
-                       .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-                       .padding(2.dp)
-               ) {
-                   // Ring effect
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                        .padding(2.dp)
+                ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = Color.Transparent,
                         shape = RoundedCornerShape(10.dp),
                         border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                     ) {}
-               }
+                }
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            title, 
-            style = MaterialTheme.typography.bodyMedium, 
+            title,
+            style = MaterialTheme.typography.bodyMedium,
             color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )

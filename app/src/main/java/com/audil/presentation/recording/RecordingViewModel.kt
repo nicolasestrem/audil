@@ -34,6 +34,13 @@ class RecordingViewModel @Inject constructor(
     private val _recordingDuration = MutableStateFlow(0L)
     val recordingDuration: StateFlow<Long> = _recordingDuration.asStateFlow()
 
+    /**
+     * Exposes the ID of the most recently saved meeting.
+     * null until a recording is stopped and saved. Navigate to detail when non-null.
+     */
+    private val _savedMeetingId = MutableStateFlow<Long?>(null)
+    val savedMeetingId: StateFlow<Long?> = _savedMeetingId.asStateFlow()
+
     private var timerJob: Job? = null
     private var startTime: Long = 0
     private var currentFile: File? = null
@@ -50,14 +57,15 @@ class RecordingViewModel @Inject constructor(
         val fileName = "REC_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.wav"
         val file = File(app.getExternalFilesDir(null), fileName)
         currentFile = file
-        
+
         val intent = Intent(app, RecordingService::class.java).apply {
             action = RecordingService.ACTION_START_RECORDING
             putExtra(RecordingService.EXTRA_FILE_PATH, file.absolutePath)
         }
         app.startService(intent)
-        
+
         _isRecording.value = true
+        _savedMeetingId.value = null // Reset for new recording
         startTime = System.currentTimeMillis()
         startTimer()
     }
@@ -67,16 +75,16 @@ class RecordingViewModel @Inject constructor(
             action = RecordingService.ACTION_STOP_RECORDING
         }
         app.startService(intent)
-        
+
         _isRecording.value = false
         stopTimer()
-        
-        // Save to History
+
+        // Save to History and expose the meeting ID for navigation
         if (currentFile != null) {
             saveToHistory(currentFile!!, startTime, _recordingDuration.value)
         }
     }
-    
+
     private fun saveToHistory(file: File, timestamp: Long, duration: Long) {
         viewModelScope.launch {
             val meeting = MeetingEntity(
@@ -87,8 +95,14 @@ class RecordingViewModel @Inject constructor(
                 participantCount = 2,
                 audioPath = file.absolutePath
             )
-            historyRepository.saveMeeting(meeting)
+            val id = historyRepository.saveMeeting(meeting)
+            _savedMeetingId.value = id
         }
+    }
+
+    /** Reset the saved meeting ID after navigation has occurred */
+    fun clearSavedMeetingId() {
+        _savedMeetingId.value = null
     }
 
     private fun startTimer() {
@@ -96,7 +110,7 @@ class RecordingViewModel @Inject constructor(
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (true) {
-                delay(500)  // Update every 500ms (2x per second) - sufficient for seconds display
+                delay(500)
                 _recordingDuration.value = System.currentTimeMillis() - startTime
             }
         }
@@ -104,6 +118,5 @@ class RecordingViewModel @Inject constructor(
 
     private fun stopTimer() {
         timerJob?.cancel()
-        // Do NOT reset _recordingDuration.value here, we need it for saving.
     }
 }

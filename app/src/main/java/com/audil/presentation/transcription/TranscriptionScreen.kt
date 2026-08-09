@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -36,7 +35,6 @@ fun TranscriptionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedModel by viewModel.selectedModel.collectAsState()
-    val isDiarizationEnabled by viewModel.isDiarizationEnabled.collectAsState()
 
     Column(
         modifier = Modifier
@@ -49,12 +47,43 @@ fun TranscriptionScreen(
             text = "Transcribe Recording",
             style = MaterialTheme.typography.headlineMedium
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
-        Text(text = "Select Model Tier:", style = MaterialTheme.typography.titleMedium)
-        
+
+        Text(text = "Transcription Engine:", style = MaterialTheme.typography.titleMedium)
+
         Column(Modifier.selectableGroup()) {
+            // Remote option (OpenAI Whisper)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .selectable(
+                        selected = (selectedModel == "whisper-1"),
+                        onClick = { viewModel.setModel("whisper-1") },
+                        role = Role.RadioButton
+                    )
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = (selectedModel == "whisper-1"),
+                    onClick = null
+                )
+                Column(modifier = Modifier.padding(start = 16.dp)) {
+                    Text(
+                        text = "OpenAI Whisper (Remote)",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "Cloud-based, highest accuracy",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Local options
             listOf("tiny", "base", "small").forEach { model ->
                 Row(
                     Modifier
@@ -70,34 +99,25 @@ fun TranscriptionScreen(
                 ) {
                     RadioButton(
                         selected = (model == selectedModel),
-                        onClick = null 
+                        onClick = null
                     )
-                    Text(
-                        text = model.replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
+                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                        Text(
+                            text = "On-Device ${model.replaceFirstChar { it.uppercase() }}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = when (model) {
+                                "tiny" -> "Fast, low resource usage"
+                                "base" -> "Balanced speed and accuracy"
+                                "small" -> "Best local accuracy"
+                                else -> ""
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Diarization Toggle
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            androidx.compose.material3.Switch(
-                checked = isDiarizationEnabled,
-                onCheckedChange = { viewModel.toggleDiarization(it) }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(text = "Speaker Diarization", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Beta Feature", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
             }
         }
 
@@ -127,7 +147,7 @@ fun TranscriptionScreen(
                 Text("Transcript:", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(state.transcript, style = MaterialTheme.typography.bodyMedium)
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onBack) {
                     Text("Done")

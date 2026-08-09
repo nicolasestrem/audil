@@ -251,14 +251,14 @@ fun MeetingDetailScreen(
                     androidx.compose.foundation.layout.Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(com.audil.ui.theme.DeepCharcoal, MaterialTheme.shapes.medium)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.medium)
                             .padding(16.dp)
                     ) {
                         if (transcriptContent != null) {
                             Text(
                                 text = transcriptContent!!,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = com.audil.ui.theme.TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
                             androidx.compose.material3.CircularProgressIndicator(

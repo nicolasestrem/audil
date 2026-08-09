@@ -50,7 +50,6 @@ class SummaryViewModel @Inject constructor(
         viewModelScope.launch {
             val meeting = historyRepository.getMeetingById(id)
             if (meeting != null) {
-                // Load transcript from cache or file
                 var loadedText = ""
                 if (meeting.transcriptPath != null) {
                     val cached = synchronized(cacheLock) {
@@ -73,15 +72,15 @@ class SummaryViewModel @Inject constructor(
                     }
                 }
 
-                // Fallback if empty or missing
+                // NO simulated fallback — if no transcript, report error
                 if (loadedText.isBlank()) {
-                    // Check if we have a "dummy" transcript for this specific meeting generated before?
-                    // For now, use robust simulation
-                    loadedText = "Simulated Transcript: Attendees discussed the roadmap. Alice mentioned the backend is 80% done. Bob said the frontend needs the new design tokens. Action items: Alice to deploy to staging, Bob to update CSS."
+                    _uiState.value = SummaryUiState.Error(
+                        "No transcript available. Please transcribe the recording first."
+                    )
+                } else {
+                    currentTranscript = loadedText
+                    _uiState.value = SummaryUiState.Idle
                 }
-
-                currentTranscript = loadedText
-                _uiState.value = SummaryUiState.Idle
             } else {
                 _uiState.value = SummaryUiState.Error("Meeting not found")
             }
@@ -101,29 +100,25 @@ class SummaryViewModel @Inject constructor(
             _uiState.value = SummaryUiState.Error("No transcript available (Empty)")
             return
         }
-        
+
         viewModelScope.launch {
-            // Check settings (logging for now or could select model in repository)
-            // val modelType = settingsRepository.modelType.first() 
-            
             repository.generateSummaryStream(currentTranscript, _selectedContext.value) { status ->
-                 _uiState.value = SummaryUiState.Loading(status)
+                _uiState.value = SummaryUiState.Loading(status)
             }
-            .onStart { _uiState.value = SummaryUiState.Loading("Initializing AI...") }
-            .catch { e -> _uiState.value = SummaryUiState.Error(e.message ?: "Unknown error") }
-            .collect { partialSummary ->
-                _uiState.value = SummaryUiState.Success(partialSummary)
-            }
+                .onStart { _uiState.value = SummaryUiState.Loading("Initializing AI...") }
+                .catch { e -> _uiState.value = SummaryUiState.Error(e.message ?: "Unknown error") }
+                .collect { partialSummary ->
+                    _uiState.value = SummaryUiState.Success(partialSummary)
+                }
         }
     }
 
     fun saveSummary(summary: String) {
         viewModelScope.launch {
-            // Updating summary path (simulation) and preview
             val filename = "SUMMARY_${currentMeetingId}.md"
             val file = java.io.File(app.getExternalFilesDir(null), filename)
             file.writeText(summary)
-            
+
             historyRepository.updateSummary(currentMeetingId, file.absolutePath, summary.take(100))
         }
     }

@@ -26,6 +26,9 @@ interface MeetingDao {
     @Query("UPDATE meetings SET summaryPath = :summaryPath, summaryPreview = :summaryPreview WHERE id = :id")
     suspend fun updateSummary(id: Long, summaryPath: String, summaryPreview: String)
 
+    @Query("UPDATE meetings SET transcriptPath = :transcriptPath WHERE id = :id")
+    suspend fun updateTranscript(id: Long, transcriptPath: String)
+
     @Delete
     suspend fun deleteMeeting(meeting: MeetingEntity)
 }

@@ -27,6 +27,10 @@ class HistoryRepository @Inject constructor(
         meetingDao.updateSummary(id, summaryPath, summaryPreview)
     }
 
+    suspend fun updateTranscript(id: Long, transcriptPath: String) {
+        meetingDao.updateTranscript(id, transcriptPath)
+    }
+
     suspend fun deleteMeeting(meeting: MeetingEntity) {
         meetingDao.deleteMeeting(meeting)
     }

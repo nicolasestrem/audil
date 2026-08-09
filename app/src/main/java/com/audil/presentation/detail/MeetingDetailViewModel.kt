@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.audil.data.local.entity.MeetingEntity
 import com.audil.data.repository.HistoryRepository
+import com.audil.data.repository.TranscriptionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,7 @@ import javax.inject.Inject
 class MeetingDetailViewModel @Inject constructor(
     private val app: android.app.Application,
     private val repository: HistoryRepository,
-    private val transcriptionRepository: com.audil.data.repository.TranscriptionRepository
+    private val transcriptionRepository: TranscriptionRepository
 ) : ViewModel() {
 
     private val _meeting = MutableStateFlow<MeetingEntity?>(null)
@@ -27,15 +28,15 @@ class MeetingDetailViewModel @Inject constructor(
 
     private val _playbackProgress = MutableStateFlow(0f)
     val playbackProgress: StateFlow<Float> = _playbackProgress.asStateFlow()
-    
+
     // Transcription State
     private val _isTranscribing = MutableStateFlow(false)
     val isTranscribing: StateFlow<Boolean> = _isTranscribing.asStateFlow()
-    
+
     private val _transcriptionStatus = MutableStateFlow("")
     val transcriptionStatus: StateFlow<String> = _transcriptionStatus.asStateFlow()
-    
-    private val _message = MutableStateFlow<String?>(null) // UI Message (Toast/Snackbar)
+
+    private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
 
     private val _transcriptContent = MutableStateFlow<String?>(null)
@@ -98,7 +99,7 @@ class MeetingDetailViewModel @Inject constructor(
                         Log.e(TAG, "MediaPlayer error: what=$what, extra=$extra")
                         true
                     }
-                    prepareAsync()  // NON-BLOCKING
+                    prepareAsync()
                 } catch (e: Exception) {
                     _isPreparingAudio.value = false
                     _message.value = "Failed to load audio: ${e.message}"
@@ -124,13 +125,12 @@ class MeetingDetailViewModel @Inject constructor(
                 mediaPlayer?.let { player ->
                     if (player.duration > 0) {
                         val progress = player.currentPosition.toFloat() / player.duration.toFloat()
-                        // Only update if change is significant (>1%)
                         if (kotlin.math.abs(progress - _playbackProgress.value) > 0.01f) {
                             _playbackProgress.value = progress
                         }
                     }
                 }
-                kotlinx.coroutines.delay(200)  // 5 updates per second
+                kotlinx.coroutines.delay(200)
             }
         }
     }
@@ -138,35 +138,34 @@ class MeetingDetailViewModel @Inject constructor(
     private fun stopProgressTracker() {
         progressJob?.cancel()
     }
-    
+
     fun startTranscription() {
         val m = _meeting.value ?: return
         val file = java.io.File(m.audioPath)
-        
+
         if (!file.exists()) {
             _transcriptionStatus.value = "Audio file not found"
             return
         }
-        
+
         viewModelScope.launch {
             _isTranscribing.value = true
             _transcriptionStatus.value = "Initializing..."
-            
+
             val result = transcriptionRepository.transcribe(file) { status ->
                 _transcriptionStatus.value = status
             }
-            
+
             result.onSuccess { transcript ->
                 _transcriptionStatus.value = "Saving..."
-                // Save transcript to file
                 val transcriptFile = java.io.File(file.parent, "TRANSCRIPT_${m.id}.txt")
                 transcriptFile.writeText(transcript)
-                
-                // Update DB
+
+                // Use dedicated updateTranscript method
+                repository.updateTranscript(m.id, transcriptFile.absolutePath)
                 val updatedMeeting = m.copy(transcriptPath = transcriptFile.absolutePath)
-                repository.saveMeeting(updatedMeeting) // Repository handles update/insert
                 _meeting.value = updatedMeeting
-                
+
                 _isTranscribing.value = false
                 _transcriptionStatus.value = ""
             }.onFailure { e ->
@@ -175,7 +174,7 @@ class MeetingDetailViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun exportAudio() {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val m = _meeting.value ?: return@launch
@@ -186,7 +185,7 @@ class MeetingDetailViewModel @Inject constructor(
             }
 
             val filename = "Audil_${src.name}"
-            val mimeType = "audio/mpeg" // Assuming mp3/m4a, adjust if needed
+            val mimeType = "audio/mpeg"
 
             try {
                 val resolver = app.contentResolver
@@ -204,7 +203,7 @@ class MeetingDetailViewModel @Inject constructor(
                         input.copyTo(out)
                     }
                 }
-                
+
                 _message.value = "Audio exported to Music/Audil/$filename"
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -216,11 +215,11 @@ class MeetingDetailViewModel @Inject constructor(
     fun exportText() {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val m = _meeting.value ?: return@launch
-            
+
             val content = StringBuilder()
             content.append("Title: ${m.title}\n")
             content.append("Date: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date(m.timestamp))}\n\n")
-            
+
             m.summaryPath?.let { summaryPath ->
                 val sumFile = java.io.File(summaryPath)
                 if (sumFile.exists()) {
@@ -234,9 +233,9 @@ class MeetingDetailViewModel @Inject constructor(
                     content.append("TRANSCRIPT:\n${transFile.readText()}\n")
                 }
             }
-            
+
             val fileName = "Audil_Export_${m.id}.txt"
-            
+
             try {
                 val resolver = app.contentResolver
                 val contentValues = android.content.ContentValues().apply {

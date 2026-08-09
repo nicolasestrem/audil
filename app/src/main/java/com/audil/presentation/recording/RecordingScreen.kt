@@ -16,6 +16,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,10 +29,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun RecordingScreen(
-    viewModel: RecordingViewModel = hiltViewModel()
+    viewModel: RecordingViewModel = hiltViewModel(),
+    onMeetingSaved: ((Long) -> Unit)? = null
 ) {
     val isRecording by viewModel.isRecording.collectAsState()
     val duration by viewModel.recordingDuration.collectAsState()
+    val savedMeetingId by viewModel.savedMeetingId.collectAsState()
+
+    // Navigate to meeting detail when a recording is saved
+    LaunchedEffect(savedMeetingId) {
+        savedMeetingId?.let { id ->
+            onMeetingSaved?.invoke(id)
+            viewModel.clearSavedMeetingId()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -41,7 +52,7 @@ fun RecordingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        
+
         Text(
             text = formatDuration(duration),
             style = MaterialTheme.typography.displayLarge.copy(
@@ -69,7 +80,7 @@ fun RecordingScreen(
 
         RecordButton(
             isRecording = isRecording,
-            onClick = { 
+            onClick = {
                 if (isRecording) {
                     viewModel.toggleRecording()
                 } else {
@@ -77,7 +88,7 @@ fun RecordingScreen(
                 }
             }
         )
-        
+
         if (isRecording) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -114,7 +125,7 @@ private fun formatDuration(millis: Long): String {
     val seconds = (millis / 1000) % 60
     val minutes = (millis / (1000 * 60)) % 60
     val hours = (millis / (1000 * 60 * 60))
-    
+
     return if (hours > 0) {
         String.format("%02d:%02d:%02d", hours, minutes, seconds)
     } else {
