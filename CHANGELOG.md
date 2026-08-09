@@ -28,36 +28,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Comprehensive project documentation (ARCHITECTURE.md, README.md, TODO.md)
-- .gitignore file for Android project
-- Build scripts for Linux/WSL and Windows
-- Material Design 3 theme with custom color palette
-- Bottom navigation bar with modern UI components
-- AudilButton, AudilCard, and AudilScaffold components
-- Midnight design system with Electric Blue and Vibrant Teal colors
-- Custom typography using Outfit and Inter fonts
+### Added — Linear-Inspired Dark-First Redesign (`9990c29`)
+- **Canvas**: Near-black `#08090A` background with luminance-stepped surfaces — no shadows, no elevation
+- **Borders**: Ultra-thin `rgba(255,255,255,0.05)` semi-transparent borders on all cards
+- **Accent**: Single indigo palette (`#5E6AD2` / `#7170FF`) replacing scattered Material colors
+- **Typography**: Three-tier weight system (400/500/600), aggressive negative letter-spacing on display text
+- **Button radius**: 8dp precise (no pill shapes), card radius 12dp
+- **All screens rewritten**: Home, Record, History, Detail, Summary, Model Selection
+- **System-theme aware**: Dark and light modes verified on Pixel 6
+- **Net reduction**: 275 lines removed (465 added, 740 deleted)
 
-### Changed
-- Refactored UI to use new design system components
-- Updated HomeScreen with recent meetings preview
-- Improved RecordingScreen with modern styling
-- Enhanced HistoryScreen with better layout
+### Added — Modern Material 3 UI (`46663a7`)
+- Complete Compose Material 3 rewrite with proper `MaterialTheme.colorScheme` tokens
+- No hardcoded colors — all surfaces, text, and accents driven by theme
+- Outfit → Default font family (Outfit crashes on some devices)
+
+### Added — Real OpenAI Transcription (`f8a82c4`)
+- OpenAI-compatible API transcription endpoint with streaming
+- Structured meeting summaries (decisions, action items, key points)
+- Secure API key storage via EncryptedSharedPreferences
 
 ### Fixed
-- Gradle 8.x compatibility issues
-- Deprecated API usage in build configuration
-- Java 17 configuration
-- Android resource generation
-- Theme configuration (removed purple, added blue theme)
-
-### Known Issues
-- RecordingService.kt has missing R class references
-- MeetingDetailScreen.kt missing Pause icon import
-- DiarizationRepository.kt has type mismatches
-- TranscriptionRepository.kt has type inference issues
-- OpenAiApiClient.kt has type mismatch
-- Sherpa-ONNX dependency currently disabled
+- Gradle wrapper regenerated (missing `gradle-wrapper.jar`)
+- `Color.White` nullable-safe arithmetic (`Color.kt:28`)
+- `AutoMirrored` → `Default` icon imports (Compose 1.5.1 compat)
+- JVM target 17 enforced across all modules
 
 ---
 
@@ -261,9 +256,9 @@ None yet.
 
 ## Links
 
-- [Repository](https://github.com/yourusername/audil)
-- [Issues](https://github.com/yourusername/audil/issues)
-- [Discussions](https://github.com/yourusername/audil/discussions)
+- [Repository](https://github.com/nicolasestrem/audil)
+- [Issues](https://github.com/nicolasestrem/audil/issues)
+- [Discussions](https://github.com/nicolasestrem/audil/discussions)
 
 ---
 
