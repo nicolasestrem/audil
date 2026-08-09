@@ -70,7 +70,7 @@ class SettingsRepository @Inject constructor(
     }
 
     val language: Flow<String> = dataStore.data.map { prefs ->
-        prefs[KEY_LANGUAGE] ?: "en"
+        prefs[KEY_LANGUAGE] ?: "auto"
     }
 
     val modelType: Flow<String> = dataStore.data.map { prefs ->
