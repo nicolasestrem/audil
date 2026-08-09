@@ -100,7 +100,7 @@ class OpenAiApiClient @Inject constructor(
      * @throws ApiServerException on other HTTP errors.
      * @throws ApiNetworkException on network failures.
      */
-    suspend fun uploadAudio(file: File, model: String? = null): String = withContext(Dispatchers.IO) {
+    suspend fun uploadAudio(file: File, model: String? = null, language: String? = null): String = withContext(Dispatchers.IO) {
         val settings = settingsProvider.getSettings()
         if (!settings.isConfigured()) {
             throw ApiNotConfiguredException()
@@ -112,9 +112,14 @@ class OpenAiApiClient @Inject constructor(
         val requestFile = file.asRequestBody("audio/wav".toMediaType())
         val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
         val modelPart = effectiveModel.toRequestBody("text/plain".toMediaType())
+        // Only send language if explicitly set — omit to let Whisper auto-detect
+        val effectiveLanguage = language ?: settings.language
+        val languagePart = if (!effectiveLanguage.isNullOrBlank() && effectiveLanguage != "auto") {
+            effectiveLanguage.toRequestBody("text/plain".toMediaType())
+        } else null
 
         try {
-            val response = api.transcribe(body, modelPart)
+            val response = api.transcribe(body, modelPart, languagePart)
             handleHttpErrors(response)
             response.body()?.text ?: throw ApiServerException(200, "Empty transcription response body")
         } catch (e: ApiNotConfiguredException) {
@@ -230,7 +235,8 @@ interface OpenAiApi {
     @POST("audio/transcriptions")
     suspend fun transcribe(
         @Part file: MultipartBody.Part,
-        @Part("model") model: okhttp3.RequestBody
+        @Part("model") model: okhttp3.RequestBody,
+        @Part("language") language: okhttp3.RequestBody? = null
     ): Response<TranscriptionResponse>
 
     @POST("chat/completions")

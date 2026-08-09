@@ -36,7 +36,6 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val currentTheme by viewModel.theme.collectAsState()
-    val currentLang by viewModel.language.collectAsState()
     val currentModel by viewModel.modelType.collectAsState()
 
     // API settings
@@ -48,7 +47,6 @@ fun SettingsScreen(
     val isTestingConnection by viewModel.isTestingConnection.collectAsState()
     val connectionError by viewModel.connectionErrorMessage.collectAsState()
 
-    var showLanguageDialog by remember { mutableStateOf(false) }
     var showApiDialog by remember { mutableStateOf(false) }
 
     AudilScaffold(
@@ -75,29 +73,6 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-
-            // Language & Region
-            SettingsGroupTitle("Language & Region")
-            AudilCard(
-                modifier = Modifier.fillMaxWidth().clickable { showLanguageDialog = true }
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Transcription Language", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Text("Language used for voice transcription", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        if (currentLang == "en") "English" else currentLang.uppercase(),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Appearance
             SettingsGroupTitle("Appearance")
@@ -182,49 +157,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
-    }
-
-    // Language Dialog
-    if (showLanguageDialog) {
-        val languages = listOf(
-            "en" to "English", "fr" to "French", "es" to "Spanish",
-            "de" to "German", "it" to "Italian", "pt" to "Portuguese"
-        )
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-            title = { Text("Select Language") },
-            text = {
-                Column {
-                    languages.forEach { (code, name) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setLanguage(code)
-                                    showLanguageDialog = false
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = currentLang == code,
-                                onClick = {
-                                    viewModel.setLanguage(code)
-                                    showLanguageDialog = false
-                                }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(name)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 
     // API Configuration Dialog

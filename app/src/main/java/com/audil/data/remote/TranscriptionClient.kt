@@ -41,7 +41,7 @@ class RemoteTranscriptionClient @Inject constructor(
         language: String?
     ): Result<String> {
         return try {
-            val transcript = apiClient.uploadAudio(file, model)
+            val transcript = apiClient.uploadAudio(file, model, language)
             Result.success(transcript)
         } catch (e: Exception) {
             Result.failure(e)

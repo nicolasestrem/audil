@@ -14,7 +14,7 @@ data class ApiSettings(
     val apiKey: String = "",
     val transcriptionModel: String = "whisper-1",
     val chatModel: String = "gpt-4o",
-    val language: String = "en"
+    val language: String? = null
 ) {
     companion object {
         val DEFAULT = ApiSettings()

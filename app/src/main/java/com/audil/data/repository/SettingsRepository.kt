@@ -97,7 +97,7 @@ class SettingsRepository @Inject constructor(
      * API key flow from EncryptedSharedPreferences (secure storage).
      * Returns empty string if no key is set.
      */
-    val remoteApiKey: Flow<String> = kotlinx.coroutines.flow.flow {
+    val remoteApiKey: kotlinx.coroutines.flow.Flow<String> = kotlinx.coroutines.flow.flow {
         emit(securePrefs.getString(KEY_SECURE_API_KEY, "") ?: "")
         // Note: EncryptedSharedPreferences doesn't support listeners natively,
         // so this flow emits on collection. For reactive updates, use a callback flow
