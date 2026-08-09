@@ -211,6 +211,15 @@ fun MeetingDetailScreen(
                     } else {
                         AudilButton(text = "Transcribe", onClick = { viewModel.startTranscription() })
                     }
+                    // Show error even after isTranscribing is reset
+                    if (!isTranscribing && transcriptionStatus.startsWith("Error")) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            transcriptionStatus,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 } else {
                     AudilButton(
                         text = if (m.summaryPath != null) "View Summary" else "Generate Summary",
