@@ -1,13 +1,33 @@
 package com.audil.presentation.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,11 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.audil.data.repository.SettingsRepository
-import com.audil.ui.theme.ElectricBlue
-import com.audil.ui.theme.TextPrimary
-import com.audil.ui.theme.TextSecondary
-import com.audil.ui.components.AudilScaffold
-import androidx.compose.foundation.border
+import com.audil.ui.components.AudilCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,59 +47,53 @@ fun ModelSelectionScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val currentModel by viewModel.modelType.collectAsState()
-
     val isDownloading by viewModel.isDownloading.collectAsState()
 
-    AudilScaffold(
+    Scaffold(
         topBar = {
-            SmallTopAppBar(
-                title = { Text("Model Selection", color = TextPrimary) },
+            TopAppBar(
+                title = { Text("Model Selection", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(16.dp)
+                    .padding(horizontal = 20.dp)
             ) {
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    "AI Model",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    "Choose the model that best fits your needs",
+                    "Choose the transcription model that fits your needs.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(bottom = 24.dp)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                // Standard Model
+                Spacer(modifier = Modifier.height(20.dp))
+
                 ModelSelectionCard(
-                    title = "Standard model (multilingual)",
-                    description = "Faster performance and smaller file size\nSupports all languages",
+                    title = "Standard (Multilingual)",
+                    description = "Faster performance, smaller size. Supports all languages.",
                     size = "142 MB",
                     isSelected = currentModel == SettingsRepository.MODEL_LOCAL_STANDARD,
                     onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_STANDARD) }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Optimized Model
                 ModelSelectionCard(
-                    title = "Optimized Model (Multilingual)",
-                    description = "Highest accuracy available\nLarger file size, slower performance\nSupports all languages except Hindi/Gujarati",
+                    title = "Optimized (Multilingual)",
+                    description = "Highest accuracy. Larger size, slower. All languages except Hindi/Gujarati.",
                     size = "465 MB",
                     isSelected = currentModel == SettingsRepository.MODEL_LOCAL_OPTIMIZED,
                     onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_OPTIMIZED) }
@@ -94,14 +104,17 @@ fun ModelSelectionScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
-                        .clickable(enabled = false) {}, // Block clicks
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.85f))
+                        .clickable(enabled = false) {},
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = ElectricBlue)
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Downloading Model...", color = TextPrimary)
+                        Text(
+                            "Downloading Model...",
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
             }
@@ -110,44 +123,65 @@ fun ModelSelectionScreen(
 }
 
 @Composable
-fun ModelSelectionCard(
+private fun ModelSelectionCard(
     title: String,
     description: String,
     size: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                if (isSelected) 2.dp else 1.dp,
-                if (isSelected) ElectricBlue else TextSecondary.copy(alpha = 0.3f),
-                RoundedCornerShape(12.dp)
-            )
-            .background(Color.Transparent, RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(16.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(
+            if (isSelected) 2.dp else 1.dp,
+            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+        )
     ) {
         Row(
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(description, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(size, style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Text(
+                        size,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
+
             Spacer(modifier = Modifier.width(16.dp))
-            
-            // Radio Button Logic
+
+            // Radio indicator
             Box(
                 modifier = Modifier
                     .size(24.dp)
                     .border(
                         2.dp,
-                        if (isSelected) ElectricBlue else TextSecondary,
+                        if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outline,
                         CircleShape
                     )
                     .padding(4.dp)
@@ -156,7 +190,7 @@ fun ModelSelectionCard(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(ElectricBlue, CircleShape)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
                     )
                 }
             }

@@ -26,24 +26,24 @@ fun AudilButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(52.dp),
         enabled = enabled,
-        shape = RoundedCornerShape(50), // Pill shape
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
-            disabledContainerColor = containerColor.copy(alpha = 0.5f),
-            disabledContentColor = contentColor.copy(alpha = 0.5f)
+            disabledContainerColor = containerColor.copy(alpha = 0.4f),
+            disabledContentColor = contentColor.copy(alpha = 0.6f)
         ),
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp, // Flat/Modern
+            defaultElevation = 0.dp,
             pressedElevation = 0.dp
         )
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

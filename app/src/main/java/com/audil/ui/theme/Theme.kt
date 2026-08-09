@@ -17,35 +17,57 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = ElectricBlue,
-    secondary = VibrantTeal,
-    tertiary = SoftPurple,
-    background = UnixBlack,
-    surface = UnixSurface,
+    primary = Indigo500,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = UnixOnBackground,
-    onSurface = UnixOnSurface,
-    onSurfaceVariant = UnixOnSurfaceVariant
+    primaryContainer = Indigo700,
+    onPrimaryContainer = Indigo100,
+    secondary = Teal400,
+    onSecondary = Color.Black,
+    secondaryContainer = Teal500.copy(alpha = 0.3f),
+    onSecondaryContainer = Teal400,
+    tertiary = Amber500,
+    error = Red500,
+    onError = Color.White,
+    errorContainer = Red600.copy(alpha = 0.3f),
+    onErrorContainer = Red50,
+    background = DarkBg,
+    onBackground = DarkOnBg,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    outline = DarkOutline,
+    outlineVariant = DarkOutline.copy(alpha = 0.5f)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = ElectricBlue,
-    secondary = VibrantTeal,
-    tertiary = SoftPurple,
-    background = PaperWhite,
-    surface = LightSurface,
+    primary = Indigo600,
     onPrimary = Color.White,
+    primaryContainer = Indigo50,
+    onPrimaryContainer = Indigo700,
+    secondary = Teal500,
     onSecondary = Color.White,
-    onBackground = LightOnSurface,
+    secondaryContainer = Teal50,
+    onSecondaryContainer = Teal500,
+    tertiary = Amber500,
+    error = Red500,
+    onError = Color.White,
+    errorContainer = Red50,
+    onErrorContainer = Red600,
+    background = LightBg,
+    onBackground = LightOnBg,
+    surface = LightSurface,
     onSurface = LightOnSurface,
-    onSurfaceVariant = LightOnSurfaceVariant
+    surfaceVariant = LightSurfaceVariant,
+    onSurfaceVariant = LightOnSurfaceVariant,
+    outline = LightOutline,
+    outlineVariant = LightOutline.copy(alpha = 0.7f)
 )
 
 @Composable
 fun AudilTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Disable for consistent branding
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -56,12 +78,12 @@ fun AudilTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Color.Transparent.toArgb() // Allow gradient to show through? Or translucent?
+            window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

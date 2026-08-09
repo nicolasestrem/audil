@@ -10,25 +10,33 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.audil.data.local.entity.MeetingEntity
+import com.audil.domain.model.MeetingType
 import com.audil.ui.components.AudilCard
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -47,19 +55,50 @@ fun HistoryScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "Meeting History",
-            style = MaterialTheme.typography.headlineMedium,
+            text = "History",
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
 
         if (meetings.isEmpty()) {
-            Text(
-                text = "No meetings recorded yet.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Surface(
+                    modifier = Modifier.size(80.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = null,
+                        modifier = Modifier.padding(22.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "No recordings yet",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Tap Record to get started",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         } else {
             LazyColumn(
                 contentPadding = PaddingValues(bottom = 16.dp),
@@ -67,7 +106,7 @@ fun HistoryScreen(
             ) {
                 items(
                     items = meetings,
-                    key = { meeting -> meeting.id }  // Stable key for compose optimization
+                    key = { meeting -> meeting.id }
                 ) { meeting ->
                     MeetingItem(
                         meeting = meeting,
@@ -85,18 +124,22 @@ fun MeetingItem(
     meeting: MeetingEntity,
     onClick: () -> Unit
 ) {
+    val accentColor = meetingTypeColor(meeting.type)
+
     AudilCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick) // Click handling on modifier as AudilCard exposes content but not onClick directly typically unless we add it. 
-            // Wait, AudilCard doesn't have onClick in my definition?
-            // Checking AudilCard.kt... it just takes content.
-            // So I should put clickable on the modifier passed to AudilCard.
+            .clickable(onClick = onClick)
+            .drawBehind {
+                drawRect(
+                    color = accentColor,
+                    topLeft = Offset(0f, 0f),
+                    size = Size(4.dp.toPx(), size.height)
+                )
+            }
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -113,7 +156,8 @@ fun MeetingItem(
                         contentDescription = null,
                         modifier = Modifier
                             .padding(end = 4.dp)
-                            .height(14.dp)
+                            .size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = formatDate(meeting.timestamp),
@@ -129,9 +173,22 @@ fun MeetingItem(
             }
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "View Details"
+                contentDescription = "View Details",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 8.dp)
             )
         }
+    }
+}
+
+private fun meetingTypeColor(type: MeetingType): Color {
+    return when (type) {
+        MeetingType.STANDUP -> Color(0xFF4CAF50)
+        MeetingType.TEAM_MEETING -> Color(0xFF2196F3)
+        MeetingType.INTERVIEW -> Color(0xFF9C27B0)
+        MeetingType.LECTURE -> Color(0xFFFF9800)
+        MeetingType.PERSONAL_NOTE -> Color(0xFFE91E63)
+        MeetingType.CUSTOM -> Color(0xFF9E9E9E)
     }
 }
 
@@ -140,7 +197,13 @@ private fun formatDate(timestamp: Long): String {
 }
 
 private fun formatDuration(millis: Long): String {
-    val minutes = (millis / (1000 * 60)) % 60
-    val hours = (millis / (1000 * 60 * 60))
-    return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+    val totalSeconds = millis / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    return when {
+        hours > 0 -> "${hours}h ${minutes}m ${seconds}s"
+        minutes > 0 -> "${minutes}m ${seconds}s"
+        else -> "${seconds}s"
+    }
 }

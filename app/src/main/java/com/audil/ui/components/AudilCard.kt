@@ -16,18 +16,19 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AudilCard(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-    elevation: Dp = 0.dp, // Flat by default
-    border: BorderStroke? = null, // No border by default for cleaner look, or subtle
+    color: Color = MaterialTheme.colorScheme.surface,
+    elevation: Dp = 0.dp,
+    cornerRadius: Dp = 16.dp,
+    border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp), // Slightly tighter radius
+        shape = RoundedCornerShape(cornerRadius),
         color = color,
         tonalElevation = elevation,
         shadowElevation = elevation,
-        border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.05f))
+        border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
