@@ -94,22 +94,8 @@ dependencies {
     implementation("androidx.security:security-crypto:1.0.0")
     implementation(libs.androidx.datastore.preferences)
 
-    // Sherpa Onnx - COMMENTED OUT TO ALLOW BUILD
-    // The sherpa-onnx library is not readily available in Maven repositories.
-    // The app will build without it, but speech recognition features won't work.
-    // 
-    // To add sherpa-onnx support, you have two options:
-    // 
-    // Option 1: Use a third-party Maven wrapper (if available):
-    // implementation("com.bihe0832.android:lib-sherpa-onnx:VERSION")
-    //
-    // Option 2: Build from source and add as local AAR:
-    // 1. Follow instructions at: https://k2-fsa.github.io/sherpa/onnx/android/build-sherpa-onnx.html
-    // 2. Place the generated AAR in app/libs/
-    // 3. Add: implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
-    //
-    // See SHERPA_ONNX_SETUP.md for detailed instructions.
-    
+    // Sherpa Onnx — local on-device speech recognition
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
 
     // Testing
     testImplementation(libs.junit)

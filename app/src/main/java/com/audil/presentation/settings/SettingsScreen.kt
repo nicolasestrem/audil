@@ -40,6 +40,7 @@ fun SettingsScreen(
 
     // API settings
     val useRemote by viewModel.useRemoteGeneration.collectAsState()
+    val useLocalTranscription by viewModel.useLocalTranscription.collectAsState()
     val apiUrl by viewModel.remoteApiUrl.collectAsState()
     val apiKey by viewModel.remoteApiKey.collectAsState()
     val chatModelName by viewModel.remoteModelName.collectAsState()
@@ -109,24 +110,50 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Model Selection
-            SettingsGroupTitle("Model Selection")
-            AudilCard(modifier = Modifier.clickable(onClick = onNavigateToModelSelection)) {
-                val modelName = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
-                    "Standard (Tiny)" else "Base / Small"
-                val modelDesc = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
-                    "Faster performance (Multilingual)" else "Higher accuracy"
-                val modelSize = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
-                    "~40 MB" else "~75-200 MB"
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(modelName, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Text(modelDesc, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(modelSize, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            // Transcription
+            SettingsGroupTitle("Transcription")
+            AudilCard {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("On-device transcription", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                            Text(
+                                if (useLocalTranscription) "Using local Whisper model" else "Using remote OpenAI Whisper API",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = useLocalTranscription,
+                            onCheckedChange = { viewModel.setUseLocalTranscription(it) }
+                        )
                     }
-                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // Show model selector only when local is enabled
+                    if (useLocalTranscription) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onNavigateToModelSelection),
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            val modelName = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
+                                "Standard (Tiny)" else "Base / Small"
+                            val modelSize = if (currentModel == SettingsRepository.MODEL_LOCAL_STANDARD)
+                                "~142 MB" else "~465 MB"
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(modelName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                                    Text("$modelSize — tap to change", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
                 }
             }
 

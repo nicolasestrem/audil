@@ -21,6 +21,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
     private val apiSettingsProvider: ApiSettingsProvider,
+    private val modelManager: com.audil.data.repository.ModelManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -51,6 +52,9 @@ class SettingsViewModel @Inject constructor(
 
     val transcriptionModel: StateFlow<String> = repository.transcriptionModel
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "whisper-1")
+
+    val useLocalTranscription: StateFlow<Boolean> = repository.useLocalTranscription
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     /**
      * Combined API settings for the ApiSettingsProvider contract.
@@ -96,12 +100,32 @@ class SettingsViewModel @Inject constructor(
 
     fun setModelType(newType: String) {
         viewModelScope.launch {
-            if (newType == SettingsRepository.MODEL_LOCAL_OPTIMIZED && modelType.value != newType) {
+            // Map to model name for ModelManager
+            val modelName = when {
+                newType == SettingsRepository.MODEL_LOCAL_OPTIMIZED -> "small"
+                else -> "tiny"
+            }
+
+            if (!modelManager.isModelDownloaded(modelName)) {
                 _isDownloading.value = true
-                android.widget.Toast.makeText(context, "Downloading optimized model...", android.widget.Toast.LENGTH_SHORT).show()
-                kotlinx.coroutines.delay(3000)
-                _isDownloading.value = false
-                android.widget.Toast.makeText(context, "Download complete", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, "Downloading model...", android.widget.Toast.LENGTH_SHORT).show()
+                try {
+                    modelManager.downloadModel(modelName) { progress ->
+                        // progress: 0.0 to 1.0
+                        if (progress >= 1.0f) {
+                            _isDownloading.value = false
+                            android.widget.Toast.makeText(context, "Model downloaded", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    _isDownloading.value = false
+                    android.widget.Toast.makeText(
+                        context,
+                        "Download failed: ${e.message}",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
             }
             repository.setModelType(newType)
         }
@@ -125,6 +149,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setTranscriptionModel(model: String) {
         viewModelScope.launch { repository.setTranscriptionModel(model) }
+    }
+
+    fun setUseLocalTranscription(use: Boolean) {
+        viewModelScope.launch { repository.setUseLocalTranscription(use) }
     }
 
     /**

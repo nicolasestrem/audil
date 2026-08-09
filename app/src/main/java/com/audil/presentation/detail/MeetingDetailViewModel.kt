@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.audil.data.local.entity.MeetingEntity
 import com.audil.data.repository.HistoryRepository
+import com.audil.data.repository.SettingsRepository
 import com.audil.data.repository.TranscriptionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,7 +19,8 @@ import javax.inject.Inject
 class MeetingDetailViewModel @Inject constructor(
     private val app: android.app.Application,
     private val repository: HistoryRepository,
-    private val transcriptionRepository: TranscriptionRepository
+    private val transcriptionRepository: TranscriptionRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _meeting = MutableStateFlow<MeetingEntity?>(null)
@@ -152,7 +155,19 @@ class MeetingDetailViewModel @Inject constructor(
             _isTranscribing.value = true
             _transcriptionStatus.value = "Initializing..."
 
-            val result = transcriptionRepository.transcribe(file) { status ->
+            // Resolve model: local model name when local is enabled, otherwise remote model
+            val modelName = if (settingsRepository.useLocalTranscription.first()) {
+                // Map ModelSelectionScreen choices to ModelManager names
+                val modelType = settingsRepository.modelType.first()
+                when {
+                    modelType.contains("optimized", ignoreCase = true) -> "small"
+                    else -> "tiny"
+                }
+            } else {
+                settingsRepository.transcriptionModel.first()
+            }
+
+            val result = transcriptionRepository.transcribe(file, modelName) { status ->
                 _transcriptionStatus.value = status
             }
 

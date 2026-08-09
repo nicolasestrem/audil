@@ -54,6 +54,7 @@ class SettingsRepository @Inject constructor(
         val KEY_REMOTE_API_URL = stringPreferencesKey("remote_api_url")
         val KEY_REMOTE_MODEL_NAME = stringPreferencesKey("remote_model_name")
         val KEY_TRANSCRIPTION_MODEL = stringPreferencesKey("transcription_model")
+        val KEY_USE_LOCAL_TRANSCRIPTION = booleanPreferencesKey("use_local_transcription")
 
         // Defaults
         const val THEME_SYSTEM = "system"
@@ -91,6 +92,10 @@ class SettingsRepository @Inject constructor(
 
     val transcriptionModel: Flow<String> = dataStore.data.map { prefs ->
         prefs[KEY_TRANSCRIPTION_MODEL] ?: "whisper-1"
+    }
+
+    val useLocalTranscription: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_USE_LOCAL_TRANSCRIPTION] ?: false
     }
 
     /**
@@ -136,6 +141,10 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setTranscriptionModel(model: String) {
         dataStore.edit { prefs -> prefs[KEY_TRANSCRIPTION_MODEL] = model }
+    }
+
+    suspend fun setUseLocalTranscription(use: Boolean) {
+        dataStore.edit { prefs -> prefs[KEY_USE_LOCAL_TRANSCRIPTION] = use }
     }
 
     /**
