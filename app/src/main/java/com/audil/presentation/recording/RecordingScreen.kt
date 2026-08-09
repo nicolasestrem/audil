@@ -1,6 +1,6 @@
 package com.audil.presentation.recording
 
-import androidx.compose.animation.core.InfiniteTransition
+import android.provider.Settings
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -27,9 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
@@ -42,17 +44,31 @@ fun RecordingScreen(
     val duration by viewModel.recordingDuration.collectAsState()
     val savedMeetingId by viewModel.savedMeetingId.collectAsState()
 
+    // Check system animator duration scale — respect reduced motion
+    val context = LocalContext.current
+    val reduceMotion = remember {
+        Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1.0f
+        ) == 0f
+    }
+
     // Breathing pulse animation for the idle record button
-    val infiniteTransition = rememberInfiniteTransition(label = "breathe")
-    val breatheScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-        ),
-        label = "breatheScale"
-    )
+    val breatheScale = if (reduceMotion) {
+        1f
+    } else {
+        val infiniteTransition = rememberInfiniteTransition(label = "breathe")
+        infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.06f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1200),
+                repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+            ),
+            label = "breatheScale"
+        ).value
+    }
 
     LaunchedEffect(savedMeetingId) {
         savedMeetingId?.let { id ->
