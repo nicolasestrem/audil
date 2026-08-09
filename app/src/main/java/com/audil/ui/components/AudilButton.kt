@@ -28,7 +28,7 @@ fun AudilButton(
             .fillMaxWidth()
             .height(48.dp),
         enabled = enabled,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,

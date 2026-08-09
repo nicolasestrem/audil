@@ -1,7 +1,13 @@
 package com.audil.presentation.recording
 
+import androidx.compose.animation.core.InfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +29,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -35,7 +42,18 @@ fun RecordingScreen(
     val duration by viewModel.recordingDuration.collectAsState()
     val savedMeetingId by viewModel.savedMeetingId.collectAsState()
 
-    // Navigate to meeting detail when a recording is saved
+    // Breathing pulse animation for the idle record button
+    val infiniteTransition = rememberInfiniteTransition(label = "breathe")
+    val breatheScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.06f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "breatheScale"
+    )
+
     LaunchedEffect(savedMeetingId) {
         savedMeetingId?.let { id ->
             onMeetingSaved?.invoke(id)
@@ -59,50 +77,60 @@ fun RecordingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Timer — displayLarge sizing with tabular-nums
+        // ── Timer — serif, tabular, warm ───────────────────────
         Text(
             text = formatDuration(duration),
             style = MaterialTheme.typography.displayLarge.copy(
-                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Serif,
                 fontFeatureSettings = "tnum"
             ),
-            color = MaterialTheme.colorScheme.onBackground
+            color = if (isRecording)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(56.dp))
 
-        // 72dp circular record button
-        Button(
-            onClick = {
-                if (isRecording) {
-                    viewModel.toggleRecording()
-                } else {
-                    permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
-                }
-            },
-            modifier = Modifier.size(72.dp),
-            shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isRecording)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.primary
-            )
+        // ── Record Button — 80dp, breathing when idle ──────────
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.scale(if (!isRecording) breatheScale else 1f)
         ) {
-            Icon(
-                imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.Mic,
-                contentDescription = if (isRecording) "Stop recording" else "Start recording",
-                modifier = Modifier.size(if (isRecording) 24.dp else 28.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
+            Button(
+                onClick = {
+                    if (isRecording) {
+                        viewModel.toggleRecording()
+                    } else {
+                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    }
+                },
+                modifier = Modifier.size(80.dp),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isRecording)
+                        MaterialTheme.colorScheme.error
+                    else
+                        MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.Mic,
+                    contentDescription = if (isRecording) "Stop" else "Record",
+                    modifier = Modifier.size(if (isRecording) 28.dp else 34.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
-        // Status text below the button
+        // ── Status ─────────────────────────────────────────────
         Text(
-            text = if (isRecording) "Recording" else "Ready",
-            style = MaterialTheme.typography.bodyMedium,
+            text = if (isRecording) "Recording…" else "Tap to begin",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontFamily = FontFamily.Serif
+            ),
             color = if (isRecording)
                 MaterialTheme.colorScheme.error
             else

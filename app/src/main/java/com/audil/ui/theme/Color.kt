@@ -2,46 +2,47 @@ package com.audil.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── Linear-inspired Dark-First Palette ───────────────────────
-// Near-black canvas, luminance-stepped surfaces, single indigo accent.
+// ── Warm Journal Palette ──────────────────────────────────────
+// Human-first: paper, leather, terracotta, warm shadows.
+// Inspired by Moleskine, Notion's warmth, and the tactile feel of a real notebook.
 
-// Brand Accent (the ONLY chromatic color)
-val BrandIndigo = Color(0xFF5E6AD2)      // CTA backgrounds, active states
-val BrandViolet = Color(0xFF7170FF)      // Interactive accent, links
-val BrandVioletHover = Color(0xFF828FFF) // Hover/lighter variant
+// Accent — the recording pulse
+val WarmTerracotta = Color(0xFFC26743)     // Primary: warm amber-terracotta
+val WarmTerracottaLight = Color(0xFFDA7B55) // Lighter for dark mode
+val WarmTerracottaMuted = Color(0xFFFFF0EB) // Very subtle warm highlight
 
-// ── Dark Theme (native medium) ───────────────────────────────
-val LinBlack = Color(0xFF08090A)         // Marketing/canvas black
-val LinPanelDark = Color(0xFF0F1011)     // Sidebars, panels
-val LinSurface = Color(0xFF191A1B)       // Cards, elevated surfaces
-val LinSurfaceHover = Color(0xFF28282C)  // Hover states
-val LinTextPrimary = Color(0xFFF7F8F8)   // Near-white, not pure
-val LinTextSecondary = Color(0xFFD0D6E0) // Silver-gray body
-val LinTextTertiary = Color(0xFF8A8F98)  // Muted gray
-val LinTextQuaternary = Color(0xFF62666D) // Most subdued
-val LinBorderSubtle = Color(0x0DFFFFFF)  // rgba(255,255,255,0.05)
-val LinBorder = Color(0x14FFFFFF)        // rgba(255,255,255,0.08)
-val LinBorderStrong = Color(0xFF23252A)  // Solid prominent border
+// Secondary — quiet green for completion, success, calm
+val SageGreen = Color(0xFF5B8C5A)
+val SageGreenLight = Color(0xFF6AA86A)
 
-// Status
-val StatusGreen = Color(0xFF27A644)
-val StatusEmerald = Color(0xFF10B981)
-val StatusRed = Color(0xFFEF4444)
-val StatusAmber = Color(0xFFF59E0B)
+// ── Light Theme — warm paper ──────────────────────────────────
+val PaperCream = Color(0xFFFAF8F5)         // Background: warm paper, not sterile white
+val PaperWhite = Color(0xFFFFFFFF)         // Cards: bright but on cream it feels warm
+val PaperWarmGray = Color(0xFFF3F0EB)      // Subtle surface variant
+val PaperInk = Color(0xFF2D2824)           // Text: warm brown-black, never pure #000
+val PaperInkSecondary = Color(0xFF6E6862)  // Secondary: warm gray
+val PaperInkTertiary = Color(0xFF9E9790)   // Muted: warm light gray
+val PaperBorder = Color(0x142D2824)        // rgba(45,40,36,0.08)
+val PaperShadow = Color(0x0A000000)        // Ultra-subtle warm shadow
 
-// ── Light Theme (secondary) ──────────────────────────────────
-val LinLightBg = Color(0xFFF7F8F8)
-val LinLightSurface = Color(0xFFFFFFFF)
-val LinLightSurfaceAlt = Color(0xFFF3F4F5)
-val LinLightBorder = Color(0xFFE6E6E6)
-val LinLightBorderAlt = Color(0xFFD0D6E0)
-val LinLightTextPrimary = Color(0xFF1C1C1C)
-val LinLightTextSecondary = Color(0xFF62666D)
+// ── Dark Theme — warm leather ─────────────────────────────────
+val WarmDarkBg = Color(0xFF1C1A18)         // Background: warm dark, like a leather notebook
+val WarmDarkSurface = Color(0xFF262320)    // Cards: slightly lifted warm dark
+val WarmDarkSurfaceAlt = Color(0xFF302C28) // Hover/alt surface
+val WarmDarkInk = Color(0xFFEBE4DC)        // Text: warm off-white, like candlelight
+val WarmDarkInkSecondary = Color(0xFFA39B92) // Secondary warm gray
+val WarmDarkInkTertiary = Color(0xFF787168)  // Muted
+val WarmDarkBorder = Color(0x14EBE4DC)     // rgba(235,228,220,0.08)
+val WarmDarkShadow = Color(0x1A000000)
 
-// Meeting type accents (used sparingly as small dots/indicators)
-val AccentStandup = Color(0xFF8B5CF6)
-val AccentTeam = Color(0xFF5E6AD2)
-val AccentInterview = Color(0xFF10B981)
-val AccentLecture = Color(0xFFF59E0B)
-val AccentPersonal = Color(0xFFEC4899)
-val AccentCustom = Color(0xFF8A8F98)
+// ── Status ────────────────────────────────────────────────────
+val StatusRed = Color(0xFFD94A4A)
+val StatusAmber = Color(0xFFE8A838)
+
+// ── Meeting type accents (for small indicator dots) ──────────
+val AccentStandup = Color(0xFF9B72E8)
+val AccentTeam = Color(0xFF5E9BD2)
+val AccentInterview = Color(0xFF5BBD8A)
+val AccentLecture = Color(0xFFE8A838)
+val AccentPersonal = Color(0xFFE8749B)
+val AccentCustom = Color(0xFFA39B92)

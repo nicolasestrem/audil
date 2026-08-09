@@ -80,9 +80,9 @@ fun MainScreen() {
             // Only show bottom bar on main screens
             if (currentRoute in listOf("home", "recording", "history", "settings")) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
                     contentColor = MaterialTheme.colorScheme.onSurface,
-                    tonalElevation = 8.dp
+                    tonalElevation = 0.dp
                 ) {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
@@ -180,8 +180,6 @@ fun MainScreen() {
             composable("home") {
                 HomeScreen(
                     onRecordClick = { navController.navigate("recording") },
-                    onHistoryClick = { navController.navigate("history") },
-                    onSettingsClick = { navController.navigate("settings") },
                     onMeetingClick = { meetingId -> navController.navigate("detail/$meetingId") }
                 )
             }
