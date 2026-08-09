@@ -1,6 +1,7 @@
 package com.audil.presentation.summary
 
 import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,16 +19,13 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,15 +71,13 @@ fun SummaryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Summary", fontWeight = FontWeight.SemiBold) },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -93,152 +89,91 @@ fun SummaryScreen(
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
-            // Configuration card
-            AudilCard(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "Configuration",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+            Text("Summary", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
 
-                // Meeting type selector
-                Text(
-                    "Meeting Type",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(24.dp))
 
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                meetingContext.type.displayName,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+            // Config
+            Text("Meeting Type", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(8.dp))
+
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Row(
+                        Modifier.fillMaxWidth().padding(14.dp).clickable { expanded = true },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(meetingContext.type.displayName, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                        Icon(Icons.Default.ChevronRight, "Select", Modifier.size(18.dp), MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        MeetingType.entries.forEach { type ->
+                            DropdownMenuItem(
+                                text = { Text(type.displayName, style = MaterialTheme.typography.bodyMedium) },
+                                onClick = { viewModel.setContext(type); expanded = false }
                             )
-                            Icon(
-                                Icons.Default.ChevronRight,
-                                contentDescription = "Select",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            MeetingType.entries.forEach { type ->
-                                DropdownMenuItem(
-                                    text = { Text(type.displayName) },
-                                    onClick = {
-                                        viewModel.setContext(type)
-                                        expanded = false
-                                    }
-                                )
-                            }
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Participant count slider
-                Text(
-                    "Participants: ${meetingContext.participantCount}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Slider(
-                    value = meetingContext.participantCount.toFloat(),
-                    onValueChange = { viewModel.setParticipantCount(it.toInt()) },
-                    valueRange = 1f..20f,
-                    steps = 19,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
-            // Generate button
+            Text("Participants: ${meetingContext.participantCount}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Slider(
+                value = meetingContext.participantCount.toFloat(),
+                onValueChange = { viewModel.setParticipantCount(it.toInt()) },
+                valueRange = 1f..20f, steps = 19,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            // Generate
             Button(
                 onClick = { viewModel.generateSummary() },
                 enabled = uiState !is SummaryUiState.Loading,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                )
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 if (uiState is SummaryUiState.Loading) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.size(12.dp))
-                    Text(
-                        (uiState as SummaryUiState.Loading).status,
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                    Spacer(Modifier.size(12.dp))
+                    Text((uiState as SummaryUiState.Loading).status, style = MaterialTheme.typography.labelLarge)
                 } else {
-                    Icon(
-                        Icons.Default.SmartToy,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text("Generate with AI", style = MaterialTheme.typography.titleMedium)
+                    Text("Generate", style = MaterialTheme.typography.labelLarge)
                 }
             }
 
-            // Error message
             if (uiState is SummaryUiState.Error) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = (uiState as SummaryUiState.Error).message,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    (uiState as SummaryUiState.Error).message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(32.dp))
 
-            // Result
             if (uiState is SummaryUiState.Success) {
-                Text(
-                    "Summary",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(16.dp))
+
+                Text("Result", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(8.dp))
 
                 AudilCard(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -246,42 +181,31 @@ fun SummaryScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = {
-                            viewModel.saveSummary((uiState as SummaryUiState.Success).summary)
-                        }) {
-                            Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.size(4.dp))
-                            Text("Save")
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { viewModel.saveSummary((uiState as SummaryUiState.Success).summary) }) {
+                            Icon(Icons.Default.Save, null, Modifier.size(16.dp))
+                            Spacer(Modifier.size(4.dp))
+                            Text("Save", style = MaterialTheme.typography.labelLarge)
                         }
                         TextButton(onClick = {
                             val sendIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_TEXT, (uiState as SummaryUiState.Success).summary)
                             }
-                            ContextCompat.startActivity(
-                                context,
-                                Intent.createChooser(sendIntent, "Share Summary"),
-                                null
-                            )
+                            ContextCompat.startActivity(context, Intent.createChooser(sendIntent, "Share"), null)
                         }) {
-                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.size(4.dp))
-                            Text("Share")
+                            Icon(Icons.Default.Share, null, Modifier.size(16.dp))
+                            Spacer(Modifier.size(4.dp))
+                            Text("Share", style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(Modifier.height(48.dp))
         }
     }
 }

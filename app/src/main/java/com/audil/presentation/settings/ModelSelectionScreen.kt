@@ -1,6 +1,5 @@
 package com.audil.presentation.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,12 +32,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.audil.data.repository.SettingsRepository
-import com.audil.ui.components.AudilCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,69 +49,38 @@ fun ModelSelectionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Model Selection", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                title = {},
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back") } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+                Spacer(Modifier.height(4.dp))
+                Text("Model", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+                Spacer(Modifier.height(8.dp))
+                Text("Choose the transcription model that fits your needs.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(24.dp))
 
-                Text(
-                    "Choose the transcription model that fits your needs.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                ModelCard("Standard", "Faster, smaller. All languages.", "142 MB",
+                    currentModel == SettingsRepository.MODEL_LOCAL_STANDARD,
+                    { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_STANDARD) })
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(Modifier.height(12.dp))
 
-                ModelSelectionCard(
-                    title = "Standard (Multilingual)",
-                    description = "Faster performance, smaller size. Supports all languages.",
-                    size = "142 MB",
-                    isSelected = currentModel == SettingsRepository.MODEL_LOCAL_STANDARD,
-                    onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_STANDARD) }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ModelSelectionCard(
-                    title = "Optimized (Multilingual)",
-                    description = "Highest accuracy. Larger size, slower. All languages except Hindi/Gujarati.",
-                    size = "465 MB",
-                    isSelected = currentModel == SettingsRepository.MODEL_LOCAL_OPTIMIZED,
-                    onClick = { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_OPTIMIZED) }
-                )
+                ModelCard("Optimized", "Highest accuracy. Larger, slower.", "465 MB",
+                    currentModel == SettingsRepository.MODEL_LOCAL_OPTIMIZED,
+                    { if (!isDownloading) viewModel.setModelType(SettingsRepository.MODEL_LOCAL_OPTIMIZED) })
             }
 
             if (isDownloading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.85f))
-                        .clickable(enabled = false) {},
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(Modifier.fillMaxSize().padding(20.dp), Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "Downloading Model...",
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        CircularProgressIndicator(strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.height(12.dp))
+                        Text("Downloading…", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             }
@@ -123,75 +89,26 @@ fun ModelSelectionScreen(
 }
 
 @Composable
-private fun ModelSelectionCard(
-    title: String,
-    description: String,
-    size: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
+private fun ModelCard(title: String, description: String, size: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(
-            if (isSelected) 2.dp else 1.dp,
-            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-        )
+        border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Text(
-                        size,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.height(2.dp))
+                Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(6.dp))
+                Text(size, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Radio indicator
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .border(
-                        2.dp,
-                        if (isSelected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.outline,
-                        CircleShape
-                    )
-                    .padding(4.dp)
-            ) {
+            Spacer(Modifier.width(16.dp))
+            Box(Modifier.size(22.dp).border(2.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, CircleShape).padding(4.dp)) {
                 if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                    )
+                    Box(Modifier.fillMaxSize()) {}
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(10.dp)) {}
                 }
             }
         }

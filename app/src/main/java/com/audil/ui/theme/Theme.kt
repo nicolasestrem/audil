@@ -17,51 +17,41 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Indigo500,
+    primary = BrandViolet,
     onPrimary = Color.White,
-    primaryContainer = Indigo700,
-    onPrimaryContainer = Indigo100,
-    secondary = Teal400,
+    primaryContainer = BrandIndigo,
+    onPrimaryContainer = Color.White,
+    background = LinBlack,
+    onBackground = LinTextPrimary,
+    surface = LinSurface,
+    onSurface = LinTextPrimary,
+    surfaceVariant = LinPanelDark,
+    onSurfaceVariant = LinTextSecondary,
+    outline = LinBorder,
+    outlineVariant = LinBorderSubtle,
+    error = StatusRed,
+    secondary = StatusEmerald,
     onSecondary = Color.Black,
-    secondaryContainer = Teal500.copy(alpha = 0.3f),
-    onSecondaryContainer = Teal400,
-    tertiary = Amber500,
-    error = Red500,
-    onError = Color.White,
-    errorContainer = Red600.copy(alpha = 0.3f),
-    onErrorContainer = Red50,
-    background = DarkBg,
-    onBackground = DarkOnBg,
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant,
-    outline = DarkOutline,
-    outlineVariant = DarkOutline.copy(alpha = 0.5f)
+    tertiary = StatusAmber
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Indigo600,
+    primary = BrandIndigo,
     onPrimary = Color.White,
-    primaryContainer = Indigo50,
-    onPrimaryContainer = Indigo700,
-    secondary = Teal500,
-    onSecondary = Color.White,
-    secondaryContainer = Teal50,
-    onSecondaryContainer = Teal500,
-    tertiary = Amber500,
-    error = Red500,
-    onError = Color.White,
-    errorContainer = Red50,
-    onErrorContainer = Red600,
-    background = LightBg,
-    onBackground = LightOnBg,
-    surface = LightSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant,
-    outline = LightOutline,
-    outlineVariant = LightOutline.copy(alpha = 0.7f)
+    primaryContainer = LinLightSurfaceAlt,
+    onPrimaryContainer = LinLightTextPrimary,
+    background = LinLightBg,
+    onBackground = LinLightTextPrimary,
+    surface = LinLightSurface,
+    onSurface = LinLightTextPrimary,
+    surfaceVariant = LinLightSurfaceAlt,
+    onSurfaceVariant = LinLightTextSecondary,
+    outline = LinLightBorder,
+    outlineVariant = LinLightBorderAlt,
+    error = StatusRed,
+    secondary = StatusEmerald,
+    onSecondary = Color.Black,
+    tertiary = StatusAmber
 )
 
 @Composable
@@ -83,7 +73,7 @@ fun AudilTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Color.Transparent.toArgb()
+            window.statusBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

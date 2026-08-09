@@ -12,13 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.audil.ui.theme.LinBorder
 
 @Composable
 fun AudilCard(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.surface,
     elevation: Dp = 0.dp,
-    cornerRadius: Dp = 16.dp,
+    cornerRadius: Dp = 12.dp,
+    padding: Dp = 16.dp,
     border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -31,7 +33,7 @@ fun AudilCard(
         border = border ?: BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(padding),
             content = content
         )
     }
